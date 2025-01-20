@@ -41,35 +41,58 @@ function Championships() {
     return <div>Error: {error}</div>;
   }
   return (
-    <div>
-      <h1>Championships</h1>
-      {championships.length === 0 ? (
-        <p>No championships found.</p>
-      ) : (
-        <ul>
-          {championships.map((championship) => (
-            <li key={championship.id}>
-              {championship.name} ({format(championship.created_at, 'dd/MM/yyyy')}) - {championship.round_total} rodadas
-            </li>
-          ))}
-        </ul>
-      )}
-      <h1>Create Championship</h1>
-      {message && <p>{message}</p>}
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="name">Name:</label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
+    <div className='section no-pad-bot no-pad-top'>
+      <section className="section">
+        <div className='container'>
+          <h2 className='header center text_b'>Peladas Cadastradas</h2>
+          <div className='row'>
+            {championships.length === 0 ? (
+              <p>Sem Peladas.</p>
+            ) : (
+              <div>
+                {championships.map((championship) => (
+                  <div className="col s12 m4">
+                    <div className="card card-avatar small" key={championship.id}>
+                      <div className='card-content'>
+                        <div className='card-title grey-text text-darken-4'>
+                          <h5 className='center'>
+                            {championship.name}
+                          </h5>
+                        </div>
+                        <div className='card-image waves-effect waves-block waves-light'></div>
+                        <p className='justify'>
+                        ({format(championship.created_at, 'dd/MM/yyyy')}) - {championship.round_total} rodadas
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-        <button type="submit">Create</button>
-      </form>
+        <div className='container'>
+          <h4 className='header center text_b'>Criar Pelada</h4>
+          <div className='row'>
+            <h1></h1>
+            {message && <p>{message}</p>}
+            <form onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="name">Name:</label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <button type="submit">Create</button>
+            </form>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,3 +1,5 @@
+@use "./color" as *;
+
 /* ==========================================================================
    Materialize variables
    ========================================================================== */
@@ -33,14 +35,14 @@
 /* 1. Colors
    ========================================================================== */
 
-   $primary-color: #d3d3d3 !default;
+   $primary-color: color("materialize-red", "lighten-2") !default;
    $primary-color-light: lighten($primary-color, 15%) !default;
    $primary-color-dark: darken($primary-color, 15%) !default;
 
-   $secondary-color: #972424 !default;
-   $success-color: "green" !default;
-   $error-color: "red" !default;
-   $link-color: "light-blue" !default;
+   $secondary-color: color("teal", "lighten-1") !default;
+   $success-color: color("green", "base") !default;
+   $error-color: color("red", "base") !default;
+   $link-color: color("light-blue", "darken-1") !default;
 
 
    /* 2. Badges
@@ -91,7 +93,7 @@
 
    $card-padding: 20px !default;
    $card-bg-color: #fff !default;
-   $card-link-color: #ca7d17 !default;
+   $card-link-color: color("orange", "accent-2") !default;
    $card-link-color-light: lighten($card-link-color, 20%) !default;
 
 
@@ -140,7 +142,7 @@
 
    // Text Inputs + Textarea
    $input-height: 3rem !default;
-   $input-border-color: #3d3d3d !default;
+   $input-border-color: color("grey", "base") !default;
    $input-border: 1px solid $input-border-color !default;
    $input-background: #fff !default;
    $input-error-color: $error-color !default;
@@ -231,9 +233,9 @@
    /* 15. Photo Slider
       ========================================================================== */
 
-   $slider-bg-color: 'grey' !default;
-   $slider-bg-color-light: 'grey' !default;
-   $slider-indicator-color: 'green' !default;
+   $slider-bg-color: color('grey', 'base') !default;
+   $slider-bg-color-light: color('grey', 'lighten-2') !default;
+   $slider-indicator-color: color('green', 'base') !default;
 
 
    /* 16. Spinners | Loaders
@@ -307,4 +309,3 @@
       ========================================================================== */
 
    $progress-bar-color: $secondary-color !default;
-

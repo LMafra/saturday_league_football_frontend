@@ -3,21 +3,27 @@ import { Link } from 'react-router';
 
 const Navbar = () => {
   return (
-    <nav className="nav">
-      <h1 className="logo">Gestor de Peladas</h1>
-      <ul className="navbar-header">
-        <li className="navItem">
-          <Link to="/" className="navLink">
-            Home
-          </Link>
-        </li>
-        <li className="navItem">
-          <Link to="/championships" className="navLink">
-            Championships
-          </Link>
-        </li>
-      </ul>
-    </nav>
+    <div className='navbar-fixed'>
+      <nav id="nav_f" className='default_color'>
+        <div className='container'>
+          <div className='nav-wrapper'>
+            <a className='brand-logo'>Pelada Insights</a>
+            <ul className='right hide-on-med-and-down'>
+              <li>
+                <Link to="/">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/championships">
+                  Championships
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </div>
   );
 };
 export default Navbar;
