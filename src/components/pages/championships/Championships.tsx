@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import championshipService from '../../../services/championshipService';
-import { format } from 'date-fns'
+import { format } from 'date-fns';
+import CreateChampionshipModal from './CreateChampionshipModal';
+import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 
 function Championships() {
   const [championships, setChampionships] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: ''});
   const [message, setMessage] = useState<string | null>(null);
+  const [open, setOpen] = React.useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+
 
   useEffect(() => {
     const fetchChampionships = async () => {
@@ -21,29 +26,43 @@ function Championships() {
     fetchChampionships();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateChampionship = async (formData: { name: string }) => {
     try {
       const createdChampionship = await championshipService.create(formData);
-      setMessage(`Championship "${createdChampionship.name}" created successfully!`);
+      setMessage(`Pelada "${createdChampionship.name}" criada com sucesso!`);
+      setOpen(true);
+
+      // Refresh the championships list
+      const data = await championshipService.getAll();
+      setChampionships(data);
     } catch (err: any) {
-      setMessage(err.message || 'An error occurred');
+      setMessage(err.message || 'Ocorreu um erro');
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleClose = (
+    event: React.SyntheticEvent | Event,
+    reason?: SnackbarCloseReason,
+  ) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
   };
 
   if (error) {
     return <div>Error: {error}</div>;
   }
+
   return (
     <div className='section no-pad-bot no-pad-top'>
       <section className="section">
         <div className='container'>
           <h2 className='header center text_b'>Peladas Cadastradas</h2>
+          <button className="btn-large waves-effect waves-light" onClick={() => setIsModalOpen(true)}>
+            Nova Pelada
+          </button>
           <div className='row'>
             {championships.length === 0 ? (
               <p>Sem Peladas.</p>
@@ -73,27 +92,17 @@ function Championships() {
             )}
           </div>
         </div>
-        <div className='container'>
-          <h4 className='header center text_b'>Criar Pelada</h4>
-          <div className='row'>
-            <h1></h1>
-            {message && <p>{message}</p>}
-            <form onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="name">Name:</label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <button type="submit">Create</button>
-            </form>
-          </div>
-        </div>
+        {isModalOpen && <CreateChampionshipModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onCreate={handleCreateChampionship}
+        />}
+        <Snackbar
+          open={open}
+          autoHideDuration={6000}
+          onClose={handleClose}
+          message={message}
+        />
       </section>
     </div>
   );
