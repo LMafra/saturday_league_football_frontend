@@ -9,7 +9,6 @@ function Championships() {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch all championships on component mount
     const fetchChampionships = async () => {
       try {
         const data = await championshipService.getAll();
@@ -61,7 +60,10 @@ function Championships() {
                         </div>
                         <div className='card-image waves-effect waves-block waves-light'></div>
                         <p className='justify'>
-                        ({format(championship.created_at, 'dd/MM/yyyy')}) - {championship.round_total} rodadas
+                        ({format(championship.created_at, 'dd/MM/yyyy')})
+                        </p>
+                        <p className='justify'>
+                          {championship.round_total} rodadas
                         </p>
                       </div>
                     </div>

@@ -8,7 +8,7 @@ const Home = () => {
         <div className="container center">
           <h2 className="white-text">Pelada Insights</h2>
           <h4 className="white-text light">
-            Manage your games with ease. Simplify the way you organize and play.
+            Gerencie suas peladas com tranquilidade. Organize e jogue de um jeito simples e sem complicação!
           </h4>
           <Link to="/championships">
             <button className="btn-large">
