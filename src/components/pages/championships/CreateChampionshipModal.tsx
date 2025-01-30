@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import CloseIcon from '@mui/icons-material/Close';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from "react";
+import CloseIcon from "@mui/icons-material/Close";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ModalProps {
   isOpen: boolean;
@@ -8,15 +8,21 @@ interface ModalProps {
   onCreate: (formData: { name: string; description?: string }) => Promise<void>;
 }
 
-const CreateChampionshipModal: React.FC<ModalProps> = ({ isOpen, onClose, onCreate }) => {
+const CreateChampionshipModal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  onCreate,
+}) => {
   const [formData, setFormData] = useState({
-    name: '',
-    description: ''
+    name: "",
+    description: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setError(null);
@@ -27,10 +33,10 @@ const CreateChampionshipModal: React.FC<ModalProps> = ({ isOpen, onClose, onCrea
     setIsSubmitting(true);
     try {
       await onCreate(formData);
-      setFormData({ name: '', description: '' });
+      setFormData({ name: "", description: "" });
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'An error occurred');
+    } catch (err: unknown) {
+      setError(err.message || "An error occurred");
     } finally {
       setIsSubmitting(false);
     }
@@ -60,7 +66,9 @@ const CreateChampionshipModal: React.FC<ModalProps> = ({ isOpen, onClose, onCrea
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-2xl font-bold text-gray-900">Criar Nova Pelada</h3>
+              <h3 className="text-2xl font-bold text-gray-900">
+                Criar Nova Pelada
+              </h3>
               <button
                 onClick={onClose}
                 className="p-1 rounded-full hover:bg-gray-100 transition-colors"
@@ -75,7 +83,10 @@ const CreateChampionshipModal: React.FC<ModalProps> = ({ isOpen, onClose, onCrea
               <div className="space-y-6">
                 {/* Name Input */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Nome da Pelada *
                   </label>
                   <input
@@ -92,7 +103,10 @@ const CreateChampionshipModal: React.FC<ModalProps> = ({ isOpen, onClose, onCrea
 
                 {/* Description Input */}
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Descrição (Opcional)
                   </label>
                   <textarea
@@ -128,7 +142,7 @@ const CreateChampionshipModal: React.FC<ModalProps> = ({ isOpen, onClose, onCrea
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Criando...' : 'Criar'}
+                  {isSubmitting ? "Criando..." : "Criar"}
                 </button>
               </div>
             </form>

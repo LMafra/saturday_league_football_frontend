@@ -1,53 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { format } from 'date-fns';
-import { FaSearch, FaFutbol, FaUsers, FaShirtsinbulk } from 'react-icons/fa';
-import { motion } from 'framer-motion';
-import roundService from '../../../services/roundService';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { format } from "date-fns";
+import { FaSearch, FaFutbol, FaUsers, FaPlus } from "react-icons/fa";
+import { motion } from "framer-motion";
+import roundService from "../../../services/roundService";
+import { Round } from "../../../types";
 
-interface Team {
-  id: string;
-  name: string;
-}
-
-interface Match {
-  id: string;
-  name: string;
-  team_1: Team;
-  team_2: Team;
-  team_1_goals: number;
-  team_2_goals: number;
-  winning_team: string | null;
-  draw: boolean;
-  created_at: string;
-}
-
-interface Player {
-  id: string;
-  name: string;
-  rounds: Array<{
-    id: string;
-    name: string;
-  }>;
-}
-
-interface RoundData {
-  id: string;
-  name: string;
-  round_date: string;
-  championship_id: string;
-  created_at: string;
-  updated_at: string;
-  matches: Match[];
-  players: Player[];
-}
-
-const Round: React.FC = () => {
+const RoundPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [round, setRound] = useState<RoundData | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [round, setRound] = useState<Round | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRoundData = async () => {
@@ -55,13 +20,13 @@ const Round: React.FC = () => {
         const roundData = await roundService.getById(id!);
 
         if (!roundData.matches || !roundData.players) {
-          throw new Error('Invalid round data structure');
+          throw new Error("Invalid round data structure");
         }
 
         setRound(roundData);
       } catch (err) {
-        setError(err.message || 'Failed to load round data');
-        console.error('API Error:', err);
+        setError(err.message || "Failed to load round data");
+        console.error("API Error:", err);
       } finally {
         setLoading(false);
       }
@@ -70,12 +35,22 @@ const Round: React.FC = () => {
     fetchRoundData();
   }, [id]);
 
-  const filteredPlayers = round?.players.filter(player =>
-    player.name.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const filteredPlayers =
+    round?.players.filter((player) =>
+      player.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    ) || [];
+
+  const handleButtonClick = () => {
+    navigate(`/matches`);
+  };
+
+  const handleCardClick = (matchId: string) => {
+    navigate(`/matches/${matchId}`);
+  };
 
   if (loading) return <div className="text-center py-12">Loading...</div>;
-  if (error) return <div className="text-red-500 text-center py-12">Error: {error}</div>;
+  if (error)
+    return <div className="text-red-500 text-center py-12">Error: {error}</div>;
   if (!round) return <div className="text-center py-12">Round not found</div>;
 
   return (
@@ -88,13 +63,15 @@ const Round: React.FC = () => {
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">{round.name}</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              {round.name}
+            </h1>
             <p className="text-gray-600">
               {format(new Date(round.round_date), "dd MMMM yyyy")}
             </p>
           </div>
           <div className="mt-4 md:mt-0 bg-blue-100 text-blue-800 px-4 py-2 rounded-full">
-            {round.matches.length} Partidas
+            {round?.matches.length} Partidas
           </div>
         </div>
       </motion.div>
@@ -107,24 +84,36 @@ const Round: React.FC = () => {
               <FaFutbol className="text-green-500" />
               Partidas
             </h2>
+            <button
+              onClick={handleButtonClick}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors"
+            >
+              <FaPlus />
+              Criar Partida
+            </button>
           </div>
 
           <div className="space-y-4">
-            {round.matches.map((match) => (
+            {round?.matches.map((match) => (
               <motion.div
                 key={match.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
+                onClick={() => handleCardClick(match.id)}
                 className="border rounded-xl p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-500">
-                    {format(new Date(match.created_at), 'dd/MM/yyyy')}
+                    {format(new Date(match.created_at), "dd/MM/yyyy")}
                   </span>
-                  <span className={`px-2 py-1 rounded-full text-sm ${
-                    match.winning_team ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {match.winning_team ? 'Finalizado' : 'Agendado'}
+                  <span
+                    className={`px-2 py-1 rounded-full text-sm ${
+                      match.winning_team
+                        ? "bg-green-100 text-green-800"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {match.winning_team ? "Finalizado" : "Agendado"}
                   </span>
                 </div>
 
@@ -144,7 +133,7 @@ const Round: React.FC = () => {
               </motion.div>
             ))}
 
-            {round.matches.length === 0 && (
+            {round?.matches.length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 Nenhuma partida cadastrada nesta rodada
               </div>
@@ -207,4 +196,4 @@ const Round: React.FC = () => {
   );
 };
 
-export default Round;
+export default RoundPage;

@@ -57,7 +57,9 @@
         width: 70%;
         opacity: 0;
 
-        p { color: $slider-bg-color-light; }
+        p {
+          color: $slider-bg-color-light;
+        }
       }
 
       &.active {
@@ -65,7 +67,6 @@
       }
     }
   }
-
 
   .indicators {
     position: absolute;
@@ -84,7 +85,7 @@
       margin: 0 12px;
       background-color: $slider-bg-color-light;
 
-      transition: background-color .3s;
+      transition: background-color 0.3s;
       border-radius: 50%;
 
       &.active {
@@ -92,5 +93,4 @@
       }
     }
   }
-
 }

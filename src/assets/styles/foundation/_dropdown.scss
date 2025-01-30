@@ -25,7 +25,9 @@
     text-align: left;
     text-transform: none;
 
-    &:hover, &.active, &.selected {
+    &:hover,
+    &.active,
+    &.selected {
       background-color: $dropdown-hover-bg-color;
     }
 
@@ -38,7 +40,8 @@
       height: 1px;
     }
 
-    & > a, & > span {
+    & > a,
+    & > span {
       font-size: 16px;
       color: $dropdown-color;
       display: block;

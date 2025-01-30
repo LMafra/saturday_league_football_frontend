@@ -6,7 +6,7 @@
  *    user zoom.
  */
 
- html {
+html {
   font-family: sans-serif; /* 1 */
   -ms-text-size-adjust: 100%; /* 2 */
   -webkit-text-size-adjust: 100%; /* 2 */
@@ -287,7 +287,8 @@ select {
  *    `input` and others.
  */
 
-/* 1 */ html input[type="button"],
+/* 1 */
+html input[type="button"],
 button,
 input[type="reset"],
 input[type="submit"] {

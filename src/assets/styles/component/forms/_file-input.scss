@@ -12,7 +12,9 @@
     padding-left: 10px;
   }
 
-  input.file-path { width: 100%; }
+  input.file-path {
+    width: 100%;
+  }
 
   .btn {
     float: left;
@@ -24,7 +26,7 @@
     cursor: pointer;
   }
 
-  input[type=file] {
+  input[type="file"] {
     position: absolute;
     top: 0;
     right: 0;

@@ -59,9 +59,15 @@
  */
 .picker__holder {
   position: fixed;
-  -webkit-transition: background 0.15s ease-out, top 0s 0.15s;
-  -moz-transition: background 0.15s ease-out, top 0s 0.15s;
-  transition: background 0.15s ease-out, top 0s 0.15s;
+  -webkit-transition:
+    background 0.15s ease-out,
+    top 0s 0.15s;
+  -moz-transition:
+    background 0.15s ease-out,
+    top 0s 0.15s;
+  transition:
+    background 0.15s ease-out,
+    top 0s 0.15s;
   -webkit-backface-visibility: hidden;
 }
 /**
@@ -72,7 +78,7 @@
   margin: 0 auto;
   min-width: 256px;
 
-//  picker width
+  //  picker width
   width: 300px;
   max-height: 350px;
 
@@ -127,8 +133,8 @@
   .picker__box {
     display: block;
 
-//    picker header font-size
-//    font-size: 1rem;
+    //    picker header font-size
+    //    font-size: 1rem;
 
     border: 1px solid #777777;
     border-top-color: #898989;

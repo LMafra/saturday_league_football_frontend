@@ -1,7 +1,7 @@
-import axios from 'axios';
+import axios from "axios";
 
 // Base URL for the API
-const VITE_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
+const VITE_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
 
 // Axios instance
 const api = axios.create({
@@ -13,7 +13,7 @@ const api = axios.create({
 const roundService = {
   // Fetch all round
   getAll: async () => {
-    const response = await api.get('/');
+    const response = await api.get("/");
     return response.data;
   },
 
@@ -24,13 +24,13 @@ const roundService = {
   },
 
   // Create a new round
-  create: async (data: any) => {
-    const response = await api.post('/', data);
+  create: async (data: unknown) => {
+    const response = await api.post("/", data);
     return response.data;
   },
 
   // Update an existing round
-  update: async (id: string, data: any) => {
+  update: async (id: string, data: unknown) => {
     const response = await api.put(`/${id}`, data);
     return response.data;
   },

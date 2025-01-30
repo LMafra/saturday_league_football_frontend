@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FiMenu, FiX } from 'react-icons/fi';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { FiMenu, FiX } from "react-icons/fi";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,7 +42,7 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Navigation */}
-      <div className={`md:hidden ${isOpen ? 'block' : 'hidden'}`}>
+      <div className={`md:hidden ${isOpen ? "block" : "hidden"}`}>
         <div className="px-4 pt-2 pb-4 space-y-2 bg-white border-t">
           <Link
             to="/championships"

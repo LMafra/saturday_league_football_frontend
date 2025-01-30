@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaPlus, FaTrophy } from 'react-icons/fa';
-import { motion } from 'framer-motion';
-import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
-import championshipService from '../../../services/championshipService';
-import CreateChampionshipModal from './CreateChampionshipModal';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaPlus, FaTrophy } from "react-icons/fa";
+import { motion } from "framer-motion";
+import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
+import championshipService from "../../../services/championshipService";
+import CreateChampionshipModal from "./CreateChampionshipModal";
+import { Championship } from "../../../types";
 
-function Championships() {
-  const [championships, setChampionships] = useState<any[]>([]);
+const ChampionshipsPage: React.FC = () => {
+  const [championships, setChampionships] = useState<Championship[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [open, setOpen] = React.useState(false);
@@ -19,8 +20,8 @@ function Championships() {
       try {
         const data = await championshipService.getAll();
         setChampionships(data);
-      } catch (err: any) {
-        setError(err.message || 'An error occurred');
+      } catch (err: unknown) {
+        setError(err.message || "An error occurred");
       }
     };
 
@@ -35,8 +36,8 @@ function Championships() {
 
       const data = await championshipService.getAll();
       setChampionships(data);
-    } catch (err: any) {
-      setMessage(err.message || 'Ocorreu um erro');
+    } catch (err: unknown) {
+      setMessage(err.message || "Ocorreu um erro");
     }
   };
 
@@ -44,7 +45,7 @@ function Championships() {
     event: React.SyntheticEvent | Event,
     reason?: SnackbarCloseReason,
   ) => {
-    if (reason === 'clickaway') return;
+    if (reason === "clickaway") return;
     setOpen(false);
   };
 
@@ -75,7 +76,9 @@ function Championships() {
 
         {championships.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-            <p className="text-gray-500 text-lg">Nenhuma pelada cadastrada ainda</p>
+            <p className="text-gray-500 text-lg">
+              Nenhuma pelada cadastrada ainda
+            </p>
           </div>
         ) : (
           <motion.div
@@ -123,17 +126,17 @@ function Championships() {
           autoHideDuration={6000}
           onClose={handleClose}
           message={message}
-          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
           sx={{
-            '& .MuiSnackbarContent-root': {
-              backgroundColor: '#2563eb',
-              color: '#fff',
-            }
+            "& .MuiSnackbarContent-root": {
+              backgroundColor: "#2563eb",
+              color: "#fff",
+            },
           }}
         />
       </div>
     </div>
   );
-}
+};
 
-export default Championships;
+export default ChampionshipsPage;

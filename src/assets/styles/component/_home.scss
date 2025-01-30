@@ -12,7 +12,11 @@
 .hero-section {
   @include center-flex;
   flex-direction: column;
-  background: linear-gradient(to bottom right, $primary-color, $secondary-color);
+  background: linear-gradient(
+    to bottom right,
+    $primary-color,
+    $secondary-color
+  );
   padding: 4rem 1rem;
   height: 100vh;
 }

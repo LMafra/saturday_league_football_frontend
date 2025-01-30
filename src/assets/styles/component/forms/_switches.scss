@@ -16,7 +16,7 @@
   cursor: pointer;
 }
 
-.switch label input[type=checkbox] {
+.switch label input[type="checkbox"] {
   opacity: 0;
   width: 0;
   height: 0;
@@ -52,30 +52,37 @@
     height: 21px;
     background-color: $switch-unchecked-bg;
     border-radius: 21px;
-    box-shadow: 0 1px 3px 1px rgba(0,0,0,.4);
+    box-shadow: 0 1px 3px 1px rgba(0, 0, 0, 0.4);
     left: -5px;
     top: -3px;
-    transition: left 0.3s ease, background .3s ease, box-shadow 0.1s ease;
+    transition:
+      left 0.3s ease,
+      background 0.3s ease,
+      box-shadow 0.1s ease;
   }
 }
 
 // Switch active style
-input[type=checkbox]:checked:not(:disabled) ~ .lever:active::after,
-input[type=checkbox]:checked:not(:disabled).tabbed:focus ~ .lever::after {
-  box-shadow: 0 1px 3px 1px rgba(0,0,0,.4), 0 0 0 15px transparentize($switch-bg-color, .9);
+input[type="checkbox"]:checked:not(:disabled) ~ .lever:active::after,
+input[type="checkbox"]:checked:not(:disabled).tabbed:focus ~ .lever::after {
+  box-shadow:
+    0 1px 3px 1px rgba(0, 0, 0, 0.4),
+    0 0 0 15px transparentize($switch-bg-color, 0.9);
 }
 
-input[type=checkbox]:not(:disabled) ~ .lever:active:after,
-input[type=checkbox]:not(:disabled).tabbed:focus ~ .lever::after {
-  box-shadow: 0 1px 3px 1px rgba(0,0,0,.4), 0 0 0 15px rgba(0, 0, 0, .08);
+input[type="checkbox"]:not(:disabled) ~ .lever:active:after,
+input[type="checkbox"]:not(:disabled).tabbed:focus ~ .lever::after {
+  box-shadow:
+    0 1px 3px 1px rgba(0, 0, 0, 0.4),
+    0 0 0 15px rgba(0, 0, 0, 0.08);
 }
 
 // Disabled Styles
-.switch input[type=checkbox][disabled] + .lever {
+.switch input[type="checkbox"][disabled] + .lever {
   cursor: default;
 }
 
-.switch label input[type=checkbox][disabled] + .lever:after,
-.switch label input[type=checkbox][disabled]:checked + .lever:after {
+.switch label input[type="checkbox"][disabled] + .lever:after,
+.switch label input[type="checkbox"][disabled]:checked + .lever:after {
   background-color: $input-disabled-solid-color;
 }

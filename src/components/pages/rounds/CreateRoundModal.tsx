@@ -1,22 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import { useParams } from 'react-router-dom';
-import CloseIcon from '@mui/icons-material/Close';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { useParams } from "react-router-dom";
+import CloseIcon from "@mui/icons-material/Close";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (formData: { name: string; round_date: string; championship_id: string }) => Promise<void>;
+  onCreate: (formData: {
+    name: string;
+    round_date: string;
+    championship_id: string;
+  }) => Promise<void>;
 }
 
-const CreateRoundModal: React.FC<ModalProps> = ({ isOpen, onClose, onCreate }) => {
+const CreateRoundModal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  onCreate,
+}) => {
   const { id } = useParams<{ id: string }>();
   const [formData, setFormData] = useState({
-    name: '',
-    round_date: '',
-    championship_id: id || ''
+    name: "",
+    round_date: "",
+    championship_id: id || "",
   });
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -24,15 +32,15 @@ const CreateRoundModal: React.FC<ModalProps> = ({ isOpen, onClose, onCreate }) =
 
   useEffect(() => {
     if (id) {
-      setFormData(prev => ({ ...prev, championship_id: id }));
+      setFormData((prev) => ({ ...prev, championship_id: id }));
     }
   }, [id]);
 
   const handleDateChange = (date: Date) => {
     setSelectedDate(date);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      round_date: date.toISOString()
+      round_date: date.toISOString(),
     }));
   };
 
@@ -50,13 +58,13 @@ const CreateRoundModal: React.FC<ModalProps> = ({ isOpen, onClose, onCreate }) =
       await onCreate({
         ...formData,
         championship_id: id || formData.championship_id,
-        round_date: selectedDate?.toISOString() || ''
+        round_date: selectedDate?.toISOString() || "",
       });
-      setFormData({ name: '', round_date: '', championship_id: id || '' });
+      setFormData({ name: "", round_date: "", championship_id: id || "" });
       setSelectedDate(null);
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'An error occurred');
+    } catch (err: unknown) {
+      setError(err.message || "An error occurred");
     } finally {
       setIsSubmitting(false);
     }
@@ -86,7 +94,9 @@ const CreateRoundModal: React.FC<ModalProps> = ({ isOpen, onClose, onCreate }) =
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-2xl font-bold text-gray-900">Criar Nova Pelada</h3>
+              <h3 className="text-2xl font-bold text-gray-900">
+                Criar Nova Pelada
+              </h3>
               <button
                 onClick={onClose}
                 className="p-1 rounded-full hover:bg-gray-100 transition-colors"
@@ -101,7 +111,10 @@ const CreateRoundModal: React.FC<ModalProps> = ({ isOpen, onClose, onCreate }) =
               <div className="space-y-6">
                 {/* Name Input */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Nome da Pelada *
                   </label>
                   <input
@@ -156,7 +169,7 @@ const CreateRoundModal: React.FC<ModalProps> = ({ isOpen, onClose, onCreate }) =
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Criando...' : 'Criar'}
+                  {isSubmitting ? "Criando..." : "Criar"}
                 </button>
               </div>
             </form>

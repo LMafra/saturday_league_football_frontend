@@ -1,5 +1,5 @@
-import React from 'react';
-import { FiGithub, FiMail, FiArrowUpRight } from 'react-icons/fi';
+import React from "react";
+import { FiGithub, FiMail, FiArrowUpRight } from "react-icons/fi";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -14,7 +14,8 @@ const Footer = () => {
               Pelada Insights
             </h3>
             <p className="text-slate-400 leading-relaxed">
-              Transformando a gestão de peladas com tecnologia intuitiva e análises poderosas.
+              Transformando a gestão de peladas com tecnologia intuitiva e
+              análises poderosas.
             </p>
           </div>
 
