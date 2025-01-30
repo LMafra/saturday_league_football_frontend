@@ -5,7 +5,7 @@ const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // Axios instance
 const api = axios.create({
-  baseURL: `${VITE_BASE_URL}/players`,
+  baseURL: `${VITE_BASE_URL}/api/v1/players`,
   timeout: 5000, // 5 seconds timeout
 });
 
