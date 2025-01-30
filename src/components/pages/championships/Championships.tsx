@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import championshipService from '../../../services/championshipService';
-import { format } from 'date-fns';
-import CreateChampionshipModal from './CreateChampionshipModal';
+import { useNavigate } from 'react-router-dom';
+import { FaPlus, FaTrophy } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
+import championshipService from '../../../services/championshipService';
+import CreateChampionshipModal from './CreateChampionshipModal';
 
 function Championships() {
   const [championships, setChampionships] = useState<any[]>([]);
@@ -10,8 +12,7 @@ function Championships() {
   const [message, setMessage] = useState<string | null>(null);
   const [open, setOpen] = React.useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchChampionships = async () => {
@@ -32,7 +33,6 @@ function Championships() {
       setMessage(`Pelada "${createdChampionship.name}" criada com sucesso!`);
       setOpen(true);
 
-      // Refresh the championships list
       const data = await championshipService.getAll();
       setChampionships(data);
     } catch (err: any) {
@@ -44,67 +44,96 @@ function Championships() {
     event: React.SyntheticEvent | Event,
     reason?: SnackbarCloseReason,
   ) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-
+    if (reason === 'clickaway') return;
     setOpen(false);
   };
 
+  const handleCardClick = (championshipId: string) => {
+    navigate(`/championships/${championshipId}`);
+  };
+
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div className="text-red-500 p-4 text-center">Error: {error}</div>;
   }
 
   return (
-    <div className='section no-pad-bot no-pad-top'>
-      <section className="section">
-        <div className='container'>
-          <h2 className='header center text_b'>Peladas Cadastradas</h2>
-          <button className="btn-large waves-effect waves-light" onClick={() => setIsModalOpen(true)}>
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 mt-24">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <FaTrophy className="text-yellow-500" />
+            Peladas Cadastradas
+          </h1>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          >
+            <FaPlus />
             Nova Pelada
           </button>
-          <div className='row'>
-            {championships.length === 0 ? (
-              <p>Sem Peladas.</p>
-            ) : (
-              <div>
-                {championships.map((championship) => (
-                  <div className="col s12 m4">
-                    <div className="card card-avatar small" key={championship.id}>
-                      <div className='card-content'>
-                        <div className='card-title grey-text text-darken-4'>
-                          <h5 className='center'>
-                            {championship.name}
-                          </h5>
-                        </div>
-                        <div className='card-image waves-effect waves-block waves-light'></div>
-                        <p className='justify'>
-                        ({format(championship.created_at, 'dd/MM/yyyy')})
-                        </p>
-                        <p className='justify'>
-                          {championship.round_total} rodadas
-                        </p>
-                      </div>
+        </div>
+
+        {championships.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+            <p className="text-gray-500 text-lg">Nenhuma pelada cadastrada ainda</p>
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {championships.map((championship) => (
+              <motion.div
+                key={championship.id}
+                whileHover={{ scale: 1.02 }}
+                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => handleCardClick(championship.id)}
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-gray-900">
+                      {championship.name}
+                    </h3>
+                    <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                      {championship.round_total} rodadas
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-        {isModalOpen && <CreateChampionshipModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onCreate={handleCreateChampionship}
-        />}
+                  <div className="bg-gray-50 px-6 py-4 border-t border-gray-100">
+                    <div className="text-sm text-gray-600">
+                      {championship.description}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        {isModalOpen && (
+          <CreateChampionshipModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onCreate={handleCreateChampionship}
+          />
+        )}
+
         <Snackbar
           open={open}
           autoHideDuration={6000}
           onClose={handleClose}
           message={message}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          sx={{
+            '& .MuiSnackbarContent-root': {
+              backgroundColor: '#2563eb',
+              color: '#fff',
+            }
+          }}
         />
-      </section>
+      </div>
     </div>
   );
 }
+
 export default Championships;

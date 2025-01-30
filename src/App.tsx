@@ -8,6 +8,8 @@ import Footer from './components/Footer';
 
 import Home from './components/pages/Home';
 import Championships from './components/pages/championships/Championships';
+import Championship from './components/pages/championships/Championship';
+import Round from './components/pages/rounds/Round';
 
 const App = () => {
   return (
@@ -17,6 +19,8 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/championships" element={<Championships />} />
+            <Route path="/championships/:id" element={<Championship />} />
+            <Route path="/rounds/:id" element={<Round />} />
           </Routes>
         </main>
         <Footer />

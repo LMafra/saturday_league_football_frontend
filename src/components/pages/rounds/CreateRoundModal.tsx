@@ -1,22 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { useParams } from 'react-router-dom';
 import CloseIcon from '@mui/icons-material/Close';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (formData: { name: string; description?: string }) => Promise<void>;
+  onCreate: (formData: { name: string; round_date: string; championship_id: string }) => Promise<void>;
 }
 
-const CreateChampionshipModal: React.FC<ModalProps> = ({ isOpen, onClose, onCreate }) => {
+const CreateRoundModal: React.FC<ModalProps> = ({ isOpen, onClose, onCreate }) => {
+  const { id } = useParams<{ id: string }>();
   const [formData, setFormData] = useState({
     name: '',
-    description: ''
+    round_date: '',
+    championship_id: id || ''
   });
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  useEffect(() => {
+    if (id) {
+      setFormData(prev => ({ ...prev, championship_id: id }));
+    }
+  }, [id]);
+
+  const handleDateChange = (date: Date) => {
+    setSelectedDate(date);
+    setFormData(prev => ({
+      ...prev,
+      round_date: date.toISOString()
+    }));
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setError(null);
@@ -25,9 +45,15 @@ const CreateChampionshipModal: React.FC<ModalProps> = ({ isOpen, onClose, onCrea
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
     try {
-      await onCreate(formData);
-      setFormData({ name: '', description: '' });
+      await onCreate({
+        ...formData,
+        championship_id: id || formData.championship_id,
+        round_date: selectedDate?.toISOString() || ''
+      });
+      setFormData({ name: '', round_date: '', championship_id: id || '' });
+      setSelectedDate(null);
       onClose();
     } catch (err: any) {
       setError(err.message || 'An error occurred');
@@ -85,24 +111,26 @@ const CreateChampionshipModal: React.FC<ModalProps> = ({ isOpen, onClose, onCrea
                     value={formData.name}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                    placeholder="Ex: Pelada da Empresa"
+                    placeholder="Ex: 1ª Rodada"
                     required
                   />
                 </div>
 
                 {/* Description Input */}
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                    Descrição (Opcional)
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Data da Rodada *
                   </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
-                    placeholder="Adicione uma descrição para sua pelada"
-                    rows={3}
+                  <DatePicker
+                    selected={selectedDate}
+                    onChange={handleDateChange}
+                    minDate={new Date()}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="Selecione uma data"
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                    required
+                    popperClassName="react-datepicker-popper"
+                    popperPlacement="auto"
                   />
                 </div>
 
@@ -139,4 +167,4 @@ const CreateChampionshipModal: React.FC<ModalProps> = ({ isOpen, onClose, onCrea
   );
 };
 
-export default CreateChampionshipModal;
+export default CreateRoundModal;
