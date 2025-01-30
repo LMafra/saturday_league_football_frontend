@@ -22,11 +22,14 @@ const ChampionshipPage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch championship data
         const championshipData = await championshipService.getById(id!);
         setChampionship(championshipData);
-      } catch (err: unknown) {
-        setError(err.message || "An error occurred");
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unexpected error occurred');
+        }
       } finally {
         setLoading(false);
       }
@@ -48,13 +51,17 @@ const ChampionshipPage: React.FC = () => {
       // Update the rounds list
       const updatedChampionship = await championshipService.getById(id!);
       setChampionship(updatedChampionship);
-    } catch (err: unknown) {
-      setMessage(err.message || "Ocorreu um erro");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
     }
   };
 
   const handleClose = (
-    event: React.SyntheticEvent | Event,
+    _event: React.SyntheticEvent | Event,
     reason?: SnackbarCloseReason,
   ) => {
     if (reason === "clickaway") return;
@@ -155,7 +162,7 @@ const ChampionshipPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">Players</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {championship.players.map((player) => (
+          {championship.players?.map((player) => (
             <div
               key={player.id}
               className="flex items-center space-x-4 p-3 border rounded-lg hover:bg-gray-50"
@@ -171,7 +178,7 @@ const ChampionshipPage: React.FC = () => {
                 <h3 className="font-medium text-gray-800">{player.id}</h3>
                 <h3 className="font-medium text-gray-800">{player.name}</h3>
                 <p className="text-sm text-gray-500">
-                  Participou de {player.rounds.length} rodadas
+                  Participou de {player.rounds?.length} rodadas
                 </p>
               </div>
             </div>

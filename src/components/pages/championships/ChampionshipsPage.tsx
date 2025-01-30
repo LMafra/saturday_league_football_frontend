@@ -20,8 +20,12 @@ const ChampionshipsPage: React.FC = () => {
       try {
         const data = await championshipService.getAll();
         setChampionships(data);
-      } catch (err: unknown) {
-        setError(err.message || "An error occurred");
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unexpected error occurred');
+        }
       }
     };
 
@@ -36,13 +40,17 @@ const ChampionshipsPage: React.FC = () => {
 
       const data = await championshipService.getAll();
       setChampionships(data);
-    } catch (err: unknown) {
-      setMessage(err.message || "Ocorreu um erro");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
     }
   };
 
   const handleClose = (
-    event: React.SyntheticEvent | Event,
+    _event: React.SyntheticEvent | Event,
     reason?: SnackbarCloseReason,
   ) => {
     if (reason === "clickaway") return;

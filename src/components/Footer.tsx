@@ -1,4 +1,3 @@
-import React from "react";
 import { FiGithub, FiMail, FiArrowUpRight } from "react-icons/fi";
 
 const Footer = () => {

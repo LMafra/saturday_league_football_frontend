@@ -25,8 +25,11 @@ const RoundPage: React.FC = () => {
 
         setRound(roundData);
       } catch (err) {
-        setError(err.message || "Failed to load round data");
-        console.error("API Error:", err);
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unexpected error occurred');
+        }
       } finally {
         setLoading(false);
       }
@@ -36,7 +39,7 @@ const RoundPage: React.FC = () => {
   }, [id]);
 
   const filteredPlayers =
-    round?.players.filter((player) =>
+    round?.players?.filter((player) =>
       player.name.toLowerCase().includes(searchQuery.toLowerCase()),
     ) || [];
 
@@ -71,7 +74,7 @@ const RoundPage: React.FC = () => {
             </p>
           </div>
           <div className="mt-4 md:mt-0 bg-blue-100 text-blue-800 px-4 py-2 rounded-full">
-            {round?.matches.length} Partidas
+            {round?.matches?.length} Partidas
           </div>
         </div>
       </motion.div>
@@ -94,7 +97,7 @@ const RoundPage: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            {round?.matches.map((match) => (
+            {round?.matches?.map((match) => (
               <motion.div
                 key={match.id}
                 initial={{ opacity: 0 }}
@@ -133,7 +136,7 @@ const RoundPage: React.FC = () => {
               </motion.div>
             ))}
 
-            {round?.matches.length === 0 && (
+            {round?.matches?.length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 Nenhuma partida cadastrada nesta rodada
               </div>
@@ -177,7 +180,7 @@ const RoundPage: React.FC = () => {
                   <div>
                     <h3 className="font-semibold">{player.name}</h3>
                     <p className="text-sm text-gray-500">
-                      Participou de {player.rounds.length} rodadas
+                      Participou de {player?.rounds?.length} rodadas
                     </p>
                   </div>
                 </div>

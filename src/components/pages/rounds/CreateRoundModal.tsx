@@ -36,7 +36,8 @@ const CreateRoundModal: React.FC<ModalProps> = ({
     }
   }, [id]);
 
-  const handleDateChange = (date: Date) => {
+  const handleDateChange = (date: Date | null) => {
+    if (!date) return;
     setSelectedDate(date);
     setFormData((prev) => ({
       ...prev,
@@ -63,8 +64,12 @@ const CreateRoundModal: React.FC<ModalProps> = ({
       setFormData({ name: "", round_date: "", championship_id: id || "" });
       setSelectedDate(null);
       onClose();
-    } catch (err: unknown) {
-      setError(err.message || "An error occurred");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -143,7 +148,6 @@ const CreateRoundModal: React.FC<ModalProps> = ({
                     className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                     required
                     popperClassName="react-datepicker-popper"
-                    popperPlacement="auto"
                   />
                 </div>
 

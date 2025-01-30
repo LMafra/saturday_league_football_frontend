@@ -4,6 +4,8 @@ export interface Championship {
   description?: string;
   created_at: string;
   updated_at: string;
+  round_total: number;
+  total_players: number;
   rounds?: Round[];
   players?: Player[];
 }
@@ -25,6 +27,7 @@ export interface Player {
   position?: string;
   created_at: string;
   updated_at: string;
+  rounds?: Round[];
 }
 
 export interface Match {

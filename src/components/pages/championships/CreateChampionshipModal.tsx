@@ -35,8 +35,12 @@ const CreateChampionshipModal: React.FC<ModalProps> = ({
       await onCreate(formData);
       setFormData({ name: "", description: "" });
       onClose();
-    } catch (err: unknown) {
-      setError(err.message || "An error occurred");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
     } finally {
       setIsSubmitting(false);
     }
