@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { format } from "date-fns";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaArrowLeft } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
 import championshipService from "../../../services/championshipService";
@@ -28,7 +28,7 @@ const ChampionshipPage: React.FC = () => {
         if (err instanceof Error) {
           setError(err.message);
         } else {
-          setError('An unexpected error occurred');
+          setError("An unexpected error occurred");
         }
       } finally {
         setLoading(false);
@@ -48,14 +48,13 @@ const ChampionshipPage: React.FC = () => {
       setMessage(`Rodada "${createdRound.name}" criada com sucesso!`);
       setOpen(true);
 
-      // Update the rounds list
       const updatedChampionship = await championshipService.getById(id!);
       setChampionship(updatedChampionship);
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('An unexpected error occurred');
+        setError("An unexpected error occurred");
       }
     }
   };
@@ -72,6 +71,10 @@ const ChampionshipPage: React.FC = () => {
     navigate(`/rounds/${roundId}`);
   };
 
+  const handleBackClick = () => {
+    navigate(-1); // Go back to the previous page
+  };
+
   if (loading) return <div className="text-center py-8">Loading...</div>;
   if (error)
     return <div className="text-red-500 text-center py-8">Error: {error}</div>;
@@ -82,6 +85,13 @@ const ChampionshipPage: React.FC = () => {
     <div className="container mx-auto px-4 py-8 mt-24">
       {/* Championship Header */}
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <button
+          onClick={handleBackClick}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4"
+        >
+          <FaArrowLeft />
+          Voltar
+        </button>
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
           {championship.name}
         </h1>
@@ -105,7 +115,7 @@ const ChampionshipPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div className="bg-blue-50 p-6 rounded-lg shadow">
           <h3 className="text-xl font-semibold text-blue-800 mb-2">
-            Total Rounds
+            Rodadas Totais
           </h3>
           <p className="text-3xl font-bold text-blue-600">
             {championship.round_total}
@@ -113,7 +123,7 @@ const ChampionshipPage: React.FC = () => {
         </div>
         <div className="bg-green-50 p-6 rounded-lg shadow">
           <h3 className="text-xl font-semibold text-green-800 mb-2">
-            Total Players
+            Jogadores
           </h3>
           <p className="text-3xl font-bold text-green-600">
             {championship.total_players}
@@ -160,7 +170,9 @@ const ChampionshipPage: React.FC = () => {
 
       {/* Players Section */}
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Players</h2>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+          Lista de Jogadores
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {championship.players?.map((player) => (
             <div

@@ -9,6 +9,7 @@ import Home from "./components/pages/Home";
 import ChampionshipsPage from "./components/pages/championships/ChampionshipsPage";
 import ChampionshipPage from "./components/pages/championships/ChampionshipPage";
 import Round from "./components/pages/rounds/RoundPage";
+import Match from "./components/pages/matches/MatchPage";
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
           <Route path="/championships" element={<ChampionshipsPage />} />
           <Route path="/championships/:id" element={<ChampionshipPage />} />
           <Route path="/rounds/:id" element={<Round />} />
+          <Route path="/matches/:id" element={<Match />} />
         </Routes>
       </main>
       <Footer />

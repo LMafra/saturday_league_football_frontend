@@ -1,64 +1,135 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { format } from "date-fns";
-import { FaSearch, FaFutbol, FaUsers, FaPlus } from "react-icons/fa";
+import { FaSearch, FaFutbol, FaUser, FaUsers, FaPlus, FaArrowLeft } from "react-icons/fa";
 import { motion } from "framer-motion";
 import roundService from "../../../services/roundService";
+import matchService from "../../../services/matchService";
+import playerService from "../../../services/playerService";
+import teamService from "../../../services/teamService";
 import { Round } from "../../../types";
+import CreateMatchModal from "../matches/CreateMatchModal";
+import CreatePlayerModal from "../players/CreatePlayerModal";
+import CreateTeamModal from "../teams/CreateTeamModal";
+import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 }
+};
+
+const Section = ({ title, icon, addLabel, onAdd, children }) => (
+  <section className="bg-white rounded-2xl shadow-lg p-6">
+    <div className="flex items-center justify-between mb-6">
+      <h2 className="text-2xl font-semibold flex items-center gap-2">
+        {icon}
+        {title}
+      </h2>
+      <button
+        onClick={onAdd}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors"
+      >
+        <FaPlus />
+        {addLabel}
+      </button>
+    </div>
+    {children}
+  </section>
+);
+
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+};
 
 const RoundPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [round, setRound] = useState<Round | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const [message, setMessage] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [modals, setModals] = useState({ match: false, player: false, team: false });
 
-  useEffect(() => {
-    const fetchRoundData = async () => {
-      try {
-        const roundData = await roundService.getById(id!);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-        if (!roundData.matches || !roundData.players) {
-          throw new Error("Invalid round data structure");
-        }
+  const filteredPlayers = useMemo(() =>
+    round?.players?.filter(player =>
+      player.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+    ) || [],
+    [round, debouncedSearchQuery]
+  );
 
-        setRound(roundData);
-      } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError('An unexpected error occurred');
-        }
-      } finally {
-        setLoading(false);
+  const filteredTeams = useMemo(() =>
+    round?.teams?.filter(team =>
+      team.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+    ) || [],
+    [round, debouncedSearchQuery]
+  );
+
+  const fetchRoundData = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const roundData = await roundService.getById(id!, signal && { signal });
+      if (!roundData.matches || !roundData.players) throw new Error("Invalid round data structure");
+      setRound(roundData);
+      setError(null);
+    } catch (err) {
+      if (!signal?.aborted) {
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred');
       }
-    };
-
-    fetchRoundData();
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
-  const filteredPlayers =
-    round?.players?.filter((player) =>
-      player.name.toLowerCase().includes(searchQuery.toLowerCase()),
-    ) || [];
+  useEffect(() => {
+    const abortController = new AbortController();
+    fetchRoundData(abortController.signal);
+    return () => abortController.abort();
+  }, [fetchRoundData]);
 
-  const handleButtonClick = () => {
-    navigate(`/matches`);
-  };
+  const createHandler = (service: any, successMessage: string) =>
+    useCallback(async (formData: any) => {
+      try {
+        const created = await service.create(formData);
+        setMessage(`${successMessage} "${created.name}" criado com sucesso!`);
+        setOpen(true);
+        await fetchRoundData();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      }
+    }, [fetchRoundData]);
 
-  const handleCardClick = (matchId: string) => {
+  const handleCreateMatch = createHandler(matchService, 'Partida');
+  const handleCreatePlayer = createHandler(playerService, 'Jogador');
+  const handleCreateTeam = createHandler(teamService, 'Time');
+
+  const handleCardClick = useCallback((matchId: string) => {
     navigate(`/matches/${matchId}`);
-  };
+  }, [navigate]);
+
+  const handleBackClick = useCallback(() => navigate(-1), [navigate]);
+
+  const handleClose = useCallback((
+    _event: React.SyntheticEvent | Event,
+    reason?: SnackbarCloseReason,
+  ) => {
+    if (reason === "clickaway") return;
+    setOpen(false);
+  }, []);
 
   if (loading) return <div className="text-center py-12">Loading...</div>;
-  if (error)
-    return <div className="text-red-500 text-center py-12">Error: {error}</div>;
+  if (error) return <div className="text-red-500 text-center py-12">Error: {error}</div>;
   if (!round) return <div className="text-center py-12">Round not found</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 mt-24">
-      {/* Round Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -66,137 +137,184 @@ const RoundPage: React.FC = () => {
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              {round.name}
-            </h1>
+            <button onClick={handleBackClick} className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4">
+              <FaArrowLeft /> Voltar
+            </button>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">{round.name}</h1>
             <p className="text-gray-600">
               {format(new Date(round.round_date), "dd MMMM yyyy")}
             </p>
           </div>
           <div className="mt-4 md:mt-0 bg-blue-100 text-blue-800 px-4 py-2 rounded-full">
-            {round?.matches?.length} Partidas
+            {round.matches?.length} Partidas
           </div>
         </div>
       </motion.div>
 
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Matches Section */}
-        <section className="bg-white rounded-2xl shadow-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold flex items-center gap-2">
-              <FaFutbol className="text-green-500" />
-              Partidas
-            </h2>
-            <button
-              onClick={handleButtonClick}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors"
-            >
-              <FaPlus />
-              Criar Partida
-            </button>
-          </div>
+        <Section
+          title="Partidas"
+          icon={<FaFutbol className="text-green-500" />}
+          addLabel="Criar Partida"
+          onAdd={() => setModals(prev => ({...prev, match: true}))}
+        >
+          <CreateMatchModal
+            isOpen={modals.match}
+            onClose={() => setModals(prev => ({...prev, match: false}))}
+            onCreate={handleCreateMatch}
+            teams={round.teams}
+          />
 
           <div className="space-y-4">
-            {round?.matches?.map((match) => (
-              <motion.div
-                key={match.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                onClick={() => handleCardClick(match.id)}
-                className="border rounded-xl p-4 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-500">
-                    {format(new Date(match.created_at), "dd/MM/yyyy")}
-                  </span>
-                  <span
-                    className={`px-2 py-1 rounded-full text-sm ${
-                      match.winning_team
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {match.winning_team ? "Finalizado" : "Agendado"}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-3 items-center text-center gap-4">
-                  <div className="text-right">
-                    <p className="font-medium">{match.team_1.name}</p>
-                  </div>
-                  <div className="text-2xl font-bold text-gray-500">
-                    <span className="font-medium">{match.team_1_goals}</span>
-                    <span>x</span>
-                    <span className="font-medium">{match.team_2_goals}</span>
-                  </div>
-                  <div className="text-left">
-                    <p className="font-medium">{match.team_2.name}</p>
-                  </div>
-                </div>
-              </motion.div>
+            {round.matches?.map(match => (
+              <MatchItem key={match.id} match={match} onClick={handleCardClick} />
             ))}
-
-            {round?.matches?.length === 0 && (
+            {!round.matches?.length && (
               <div className="text-center py-8 text-gray-500">
                 Nenhuma partida cadastrada nesta rodada
               </div>
             )}
           </div>
-        </section>
+        </Section>
 
-        {/* Players Section */}
-        <section className="bg-white rounded-2xl shadow-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold flex items-center gap-2">
-              <FaUsers className="text-blue-500" />
-              Jogadores
-            </h2>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Buscar jogador..."
-                className="pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <FaSearch className="absolute left-3 top-3 text-gray-400" />
-            </div>
-          </div>
+        <Section
+          title="Jogadores"
+          icon={<FaUser className="text-blue-500" />}
+          addLabel="Criar Jogador"
+          onAdd={() => setModals(prev => ({...prev, player: true}))}
+        >
+          <CreatePlayerModal
+            isOpen={modals.player}
+            onClose={() => setModals(prev => ({...prev, player: false}))}
+            onCreate={handleCreatePlayer}
+          />
+
+          <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder="Buscar jogador..." />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredPlayers.map((player) => (
-              <motion.div
-                key={player.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="border rounded-xl p-4 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 font-bold">
-                      {player.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{player.name}</h3>
-                    <p className="text-sm text-gray-500">
-                      Participou de {player?.rounds?.length} rodadas
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-
-            {filteredPlayers.length === 0 && (
-              <div className="col-span-full text-center py-8 text-gray-500">
-                Nenhum jogador encontrado
-              </div>
-            )}
+            {filteredPlayers.map(player => <PlayerItem key={player.id} player={player} />)}
+            {!filteredPlayers.length && <EmptyState message="Nenhum jogador encontrado" />}
           </div>
-        </section>
+        </Section>
+
+        <Section
+          title="Times"
+          icon={<FaUsers className="text-blue-500" />}
+          addLabel="Criar Time"
+          onAdd={() => setModals(prev => ({...prev, team: true}))}
+        >
+          <CreateTeamModal
+            isOpen={modals.team}
+            onClose={() => setModals(prev => ({...prev, team: false}))}
+            onCreate={handleCreateTeam}
+          />
+
+          <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder="Buscar time..." />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredTeams.map(team => <TeamItem key={team.id} team={team} />)}
+            {!filteredTeams.length && <EmptyState message="Nenhum time encontrado" />}
+          </div>
+        </Section>
+
+        <Snackbar
+          open={open}
+          autoHideDuration={6000}
+          onClose={handleClose}
+          message={message}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          sx={{
+            "& .MuiSnackbarContent-root": {
+              backgroundColor: "#2563eb",
+              color: "#fff",
+            },
+          }}
+        />
       </div>
     </div>
   );
 };
+
+const MatchItem = React.memo(({ match, onClick }) => (
+  <motion.div
+    variants={itemVariants}
+    onClick={() => onClick(match.id)}
+    className="border rounded-xl p-4 hover:bg-gray-50 transition-colors"
+  >
+    <div className="flex items-center justify-between mb-2">
+      <span className="text-sm text-gray-500">
+        {format(new Date(match.created_at), "dd/MM/yyyy")}
+      </span>
+      <span className="text-sm text-gray-500">{match.name}</span>
+      <span className={`px-2 py-1 rounded-full text-sm ${match.winning_team ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}>
+        {match.winning_team ? "Finalizado" : "Agendado"}
+      </span>
+    </div>
+    <div className="grid grid-cols-3 items-center text-center gap-4">
+      <p className="font-medium text-right">{match.team_1.name}</p>
+      <div className="text-2xl font-bold text-gray-500">
+        <span className="font-medium">{match.team_1_goals}</span>x
+        <span className="font-medium">{match.team_2_goals}</span>
+      </div>
+      <p className="font-medium text-left">{match.team_2.name}</p>
+    </div>
+  </motion.div>
+));
+
+const PlayerItem = React.memo(({ player }) => (
+  <motion.div
+    variants={itemVariants}
+    className="border rounded-xl p-4 hover:bg-gray-50 transition-colors"
+  >
+    <div className="flex items-center gap-4">
+      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+        <span className="text-blue-600 font-bold">
+          {player.name.charAt(0).toUpperCase()}
+        </span>
+      </div>
+      <div>
+        <h3 className="font-semibold">{player.name}</h3>
+        <p className="text-sm text-gray-500">
+          Participou de {player.rounds?.length} rodadas
+        </p>
+      </div>
+    </div>
+  </motion.div>
+));
+
+const TeamItem = React.memo(({ team }) => (
+  <motion.div
+    variants={itemVariants}
+    className="border rounded-xl p-4 hover:bg-gray-50 transition-colors"
+  >
+    <div className="flex items-center gap-4">
+      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+        <span className="text-blue-600 font-bold">
+          {team.name.charAt(0).toUpperCase()}
+        </span>
+      </div>
+      <h3 className="font-semibold">{team.name}</h3>
+    </div>
+  </motion.div>
+));
+
+const SearchInput = ({ value, onChange, placeholder }) => (
+  <div className="relative mb-4">
+    <input
+      type="text"
+      placeholder={placeholder}
+      className="pl-10 pr-4 py-2 border rounded-full w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
+    <FaSearch className="absolute left-3 top-3 text-gray-400" />
+  </div>
+);
+
+const EmptyState = ({ message }) => (
+  <div className="col-span-full text-center py-8 text-gray-500">
+    {message}
+  </div>
+);
 
 export default RoundPage;

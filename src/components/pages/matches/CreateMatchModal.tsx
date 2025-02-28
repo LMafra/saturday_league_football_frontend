@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { useParams } from "react-router-dom";
 import CloseIcon from "@mui/icons-material/Close";
+import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ModalProps {
@@ -10,21 +8,28 @@ interface ModalProps {
   onClose: () => void;
   onCreate: (formData: {
     name: string;
-    round_date: string;
-    championship_id: string;
+    team_1_id: number;
+    team_2_id: number;
+    round_id: string;
+    date: string;
   }) => Promise<void>;
+  teams: { id: number; name: string }[];
+  rounds: { id: number; name: string }[];
 }
 
-const CreateRoundModal: React.FC<ModalProps> = ({
+const CreateMatchModal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   onCreate,
+  teams,
 }) => {
   const { id } = useParams<{ id: string }>();
   const [formData, setFormData] = useState({
     name: "",
-    round_date: "",
-    championship_id: id || "",
+    team_1_id: "",
+    team_2_id: "",
+    round_id: id || "",
+    date: "",
   });
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -32,20 +37,13 @@ const CreateRoundModal: React.FC<ModalProps> = ({
 
   useEffect(() => {
     if (id) {
-      setFormData((prev) => ({ ...prev, championship_id: id }));
+      setFormData((prev) => ({ ...prev, round_id: id }));
     }
   }, [id]);
 
-  const handleDateChange = (date: Date | null) => {
-    if (!date) return;
-    setSelectedDate(date);
-    setFormData((prev) => ({
-      ...prev,
-      round_date: date.toISOString(),
-    }));
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setError(null);
@@ -58,10 +56,17 @@ const CreateRoundModal: React.FC<ModalProps> = ({
     try {
       await onCreate({
         ...formData,
-        championship_id: id || formData.championship_id,
-        round_date: selectedDate?.toISOString() || "",
+        team_1_id: Number(formData.team_1_id),
+        team_2_id: Number(formData.team_2_id),
+        round_id:  id || formData.round_id,
       });
-      setFormData({ name: "", round_date: "", championship_id: id || "" });
+      setFormData({
+        name: "",
+        team_1_id: "",
+        team_2_id: "",
+        round_id: id || "",
+        date: selectedDate?.toISOString() || "",
+      });
       setSelectedDate(null);
       onClose();
     } catch (err) {
@@ -96,11 +101,12 @@ const CreateRoundModal: React.FC<ModalProps> = ({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
             className="relative w-full max-w-md bg-white rounded-2xl shadow-xl"
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b">
               <h3 className="text-2xl font-bold text-gray-900">
-                Criar Nova Pelada
+                Criar Nova Partida
               </h3>
               <button
                 onClick={onClose}
@@ -114,45 +120,67 @@ const CreateRoundModal: React.FC<ModalProps> = ({
             {/* Body */}
             <form onSubmit={handleSubmit} className="p-6">
               <div className="space-y-6">
-                {/* Name Input */}
+                {/* Match Name */}
                 <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Nome da Pelada *
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nome da Partida *
                   </label>
                   <input
-                    id="name"
                     name="name"
                     type="text"
                     value={formData.name}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                    placeholder="Ex: 1ª Rodada"
+                    placeholder="Ex: Final do Campeonato"
                     required
                   />
                 </div>
 
-                {/* Description Input */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Data da Rodada *
-                  </label>
-                  <DatePicker
-                    selected={selectedDate}
-                    onChange={handleDateChange}
-                    minDate={new Date()}
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="Selecione uma data"
-                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                    required
-                    popperClassName="react-datepicker-popper"
-                  />
+                {/* Team Selection */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Time 1 *
+                    </label>
+                    <select
+                      name="team_1_id"
+                      value={formData.team_1_id}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                      required
+                    >
+                      <option value="">Selecione um time</option>
+                      {teams.map((team) => (
+                        <option key={team.id} value={team.id}>
+                          {team.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Time 2 *
+                    </label>
+                    <select
+                      name="team_2_id"
+                      value={formData.team_2_id}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                      required
+                    >
+                      <option value="">Selecione um time</option>
+                      {teams.map((team) => (
+                        <option key={team.id} value={team.id}>
+                          {team.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 {error && (
-                  <div className="p-3 bg-red-50 border border-red-100 rounded-lg flex items-center gap-2">
+                  <div className="p-3 bg-red-50 border border-red-100 rounded-lg">
                     <span className="text-red-600 text-sm">{error}</span>
                   </div>
                 )}
@@ -171,9 +199,13 @@ const CreateRoundModal: React.FC<ModalProps> = ({
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
-                  disabled={isSubmitting}
+                  disabled={
+                    isSubmitting ||
+                    !formData.team_1_id ||
+                    !formData.team_2_id
+                  }
                 >
-                  {isSubmitting ? "Criando..." : "Criar"}
+                  {isSubmitting ? "Criando..." : "Criar Partida"}
                 </button>
               </div>
             </form>
@@ -184,4 +216,4 @@ const CreateRoundModal: React.FC<ModalProps> = ({
   );
 };
 
-export default CreateRoundModal;
+export default CreateMatchModal;

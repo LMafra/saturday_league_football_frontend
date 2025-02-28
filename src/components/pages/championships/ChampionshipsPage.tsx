@@ -24,7 +24,7 @@ const ChampionshipsPage: React.FC = () => {
         if (err instanceof Error) {
           setError(err.message);
         } else {
-          setError('An unexpected error occurred');
+          setError("An unexpected error occurred");
         }
       }
     };
@@ -44,7 +44,7 @@ const ChampionshipsPage: React.FC = () => {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('An unexpected error occurred');
+        setError("An unexpected error occurred");
       }
     }
   };
