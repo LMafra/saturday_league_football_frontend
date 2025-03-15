@@ -1,25 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (formData: {
-    name: string;
-  }) => Promise<void>;
+  onCreate: (formData: { name: string; round_id: string }) => Promise<void>;
+  roundId: string;
 }
 
 const CreateTeamModal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   onCreate,
+  roundId,
 }) => {
   const [formData, setFormData] = useState({
     name: "",
+    round_id: roundId,
   });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, round_id: roundId }));
+  }, [roundId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -36,9 +41,11 @@ const CreateTeamModal: React.FC<ModalProps> = ({
     try {
       await onCreate({
         ...formData,
+        round_id: formData.round_id,
       });
       setFormData({
-        name: ""
+        name: "",
+        round_id: roundId || "",
       });
       onClose();
     } catch (err) {
@@ -128,10 +135,7 @@ const CreateTeamModal: React.FC<ModalProps> = ({
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
-                  disabled={
-                    isSubmitting ||
-                    !formData.name
-                  }
+                  disabled={isSubmitting || !formData.name}
                 >
                   {isSubmitting ? "Criando..." : "Criar Time"}
                 </button>

@@ -58,7 +58,7 @@ const CreateMatchModal: React.FC<ModalProps> = ({
         ...formData,
         team_1_id: Number(formData.team_1_id),
         team_2_id: Number(formData.team_2_id),
-        round_id:  id || formData.round_id,
+        round_id: id || formData.round_id,
       });
       setFormData({
         name: "",
@@ -200,9 +200,7 @@ const CreateMatchModal: React.FC<ModalProps> = ({
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
                   disabled={
-                    isSubmitting ||
-                    !formData.team_1_id ||
-                    !formData.team_2_id
+                    isSubmitting || !formData.team_1_id || !formData.team_2_id
                   }
                 >
                   {isSubmitting ? "Criando..." : "Criar Partida"}

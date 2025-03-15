@@ -1,60 +1,115 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams } from "react-router-dom";
+import { FiSearch } from "react-icons/fi";
+import { FaUser, FaUserPlus } from "react-icons/fa";
+import playerService from "../../../services/playerService";
+import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
+
+interface Player {
+  id: string;
+  name: string;
+}
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (formData: {
     name: string;
+    player_rounds_attributes: Array<{ round_id: string }>
   }) => Promise<void>;
+  championshipId?: string;
+  currentPlayers: Player[];
 }
 
 const CreatePlayerModal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   onCreate,
+  championshipId,
+  currentPlayers,
 }) => {
-  const { id } = useParams<{ id: string }>();
-  const [formData, setFormData] = useState({
-    name: "",
-  });
+  const { id: roundId } = useParams<{ id: string }>();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [existingPlayers, setExistingPlayers] = useState<Player[]>([]);
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [open, setOpen] = React.useState(false);
+
+  const currentPlayerIds = useMemo(() =>
+    new Set(currentPlayers.map(p => p.id)),
+  [currentPlayers]);
 
   useEffect(() => {
-    if (id) {
-      setFormData((prev) => ({ ...prev, round_id: id }));
-    }
-  }, [id]);
+    const fetchPlayers = async () => {
+      if (championshipId) {
+        try {
+          const players = await playerService.getAll(championshipId);
+          const availablePlayers = players.filter(
+            player => !currentPlayerIds.has(player.id)
+          );
+          setExistingPlayers(availablePlayers);
+        } catch (err) {
+          setError("Failed to load existing players");
+        }
+      }
+    };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setError(null);
+    if (isOpen) fetchPlayers();
+  }, [championshipId, isOpen, currentPlayerIds]);
+
+  const filteredPlayers = useMemo(() => {
+    if (!searchTerm) return [];
+    return existingPlayers.filter(player =>
+      player.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !currentPlayerIds.has(player.id)
+    );
+  }, [existingPlayers, searchTerm, currentPlayerIds]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setSelectedPlayer(null);
   };
+
+  const handleSelectPlayer = (player: Player) => {
+    setSelectedPlayer(player);
+    setSearchTerm(player.name);
+  };
+
+  const handleClose = useCallback(
+    (_event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
+      if (reason === "clickaway") return;
+      setOpen(false);
+    },
+    [],
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     try {
-      await onCreate({
-        ...formData,
-      });
-      setFormData({
-        name: ""
-      });
-      onClose();
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
+      if (selectedPlayer) {
+        await playerService.addToRound(selectedPlayer.id, roundId!);
+        setMessage(`${selectedPlayer.name} added to round!`);
       } else {
-        setError("An unexpected error occurred");
+        await onCreate({
+          name: searchTerm,
+          player_rounds_attributes: roundId ? [{ round_id: roundId }] : []
+        });
+        setMessage(`${searchTerm} created successfully!`);
       }
+
+      setOpen(true);
+      onClose();
+      setSearchTerm("");
+      setSelectedPlayer(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Submission failed");
     } finally {
       setIsSubmitting(false);
     }
@@ -69,13 +124,11 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-          {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={onClose}
           />
 
-          {/* Modal Content */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -83,37 +136,63 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
             className="relative w-full max-w-md bg-white rounded-2xl shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div className="flex items-center justify-between p-6 border-b">
               <h3 className="text-2xl font-bold text-gray-900">
-                Criar Novo Jogador
+                {selectedPlayer ? "Add Player" : "Create Player"}
               </h3>
               <button
                 onClick={onClose}
                 className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                aria-label="Close"
               >
                 <CloseIcon className="w-6 h-6 text-gray-500" />
               </button>
             </div>
 
-            {/* Body */}
             <form onSubmit={handleSubmit} className="p-6">
               <div className="space-y-6">
-                {/* Match Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nome do Jogador *
+                    {selectedPlayer ? "Selected Player" : "Search Players"}
                   </label>
-                  <input
-                    name="name"
-                    type="text"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                    placeholder="Ex: Joãozinho Louco"
-                    required
-                  />
+                  <div className="relative">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all pr-12"
+                        placeholder="Type to search or create..."
+                        disabled={!!selectedPlayer}
+                      />
+                      <FiSearch className="absolute right-4 top-3.5 text-gray-400" />
+                    </div>
+
+                    {!selectedPlayer && searchTerm && (
+                      <div className="absolute z-10 w-full mt-2 bg-white border rounded-lg shadow-lg max-h-60 overflow-auto">
+                        {filteredPlayers.map(player => (
+                          <button
+                            type="button"
+                            key={player.id}
+                            onClick={() => handleSelectPlayer(player)}
+                            className="w-full px-4 py-3 text-left hover:bg-blue-50 flex items-center gap-3"
+                          >
+                            <FaUser className="text-blue-600" />
+                            <span>{player.name}</span>
+                          </button>
+                        ))}
+
+                        {filteredPlayers.length === 0 && (
+                          <button
+                            type="submit"
+                            className="w-full px-4 py-3 text-left hover:bg-green-50 flex items-center gap-3 text-green-600"
+                          >
+                            <FaUserPlus className="text-green-600" />
+                            <span>Create new: {searchTerm}</span>
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {error && (
@@ -123,7 +202,6 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
                 )}
               </div>
 
-              {/* Footer */}
               <div className="mt-8 flex justify-end gap-3">
                 <button
                   type="button"
@@ -131,20 +209,32 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
                   className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition-colors"
                   disabled={isSubmitting}
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
-                  disabled={
-                    isSubmitting ||
-                    !formData.name
-                  }
+                  disabled={isSubmitting || !searchTerm}
                 >
-                  {isSubmitting ? "Criando..." : "Criar Jogador"}
+                  {isSubmitting
+                    ? selectedPlayer ? "Adding..." : "Creating..."
+                    : selectedPlayer ? "Add Player" : "Create Player"}
                 </button>
               </div>
             </form>
+            <Snackbar
+              open={open}
+              autoHideDuration={6000}
+              onClose={handleClose}
+              message={message}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
+              sx={{
+                "& .MuiSnackbarContent-root": {
+                  backgroundColor: "#2563eb",
+                  color: "#fff",
+                },
+              }}
+            />
           </motion.div>
         </motion.div>
       )}
@@ -153,3 +243,4 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
 };
 
 export default CreatePlayerModal;
+

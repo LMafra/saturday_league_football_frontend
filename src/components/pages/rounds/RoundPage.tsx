@@ -1,7 +1,14 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { format } from "date-fns";
-import { FaSearch, FaFutbol, FaUser, FaUsers, FaPlus, FaArrowLeft } from "react-icons/fa";
+import {
+  FaSearch,
+  FaFutbol,
+  FaUser,
+  FaUsers,
+  FaPlus,
+  FaArrowLeft,
+} from "react-icons/fa";
 import { motion } from "framer-motion";
 import roundService from "../../../services/roundService";
 import matchService from "../../../services/matchService";
@@ -15,7 +22,11 @@ import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
 
 const itemVariants = {
   hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0 }
+  visible: { opacity: 1, y: 0 },
+};
+
+type ServiceType<T> = {
+  create: (data: T) => Promise<{ id: string; name: string }>;
 };
 
 const Section = ({ title, icon, addLabel, onAdd, children }) => (
@@ -55,38 +66,50 @@ const RoundPage: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [modals, setModals] = useState({ match: false, player: false, team: false });
+  const [modals, setModals] = useState({
+    match: false,
+    player: false,
+    team: false,
+  });
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  const filteredPlayers = useMemo(() =>
-    round?.players?.filter(player =>
-      player.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-    ) || [],
-    [round, debouncedSearchQuery]
+  const filteredPlayers = useMemo(
+    () =>
+      round?.players?.filter((player) =>
+        player.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()),
+      ) || [],
+    [round, debouncedSearchQuery],
   );
 
-  const filteredTeams = useMemo(() =>
-    round?.teams?.filter(team =>
-      team.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-    ) || [],
-    [round, debouncedSearchQuery]
+  const filteredTeams = useMemo(
+    () =>
+      round?.teams?.filter((team) =>
+        team.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()),
+      ) || [],
+    [round, debouncedSearchQuery],
   );
 
-  const fetchRoundData = useCallback(async (signal?: AbortSignal) => {
-    try {
-      const roundData = await roundService.getById(id!, signal && { signal });
-      if (!roundData.matches || !roundData.players) throw new Error("Invalid round data structure");
-      setRound(roundData);
-      setError(null);
-    } catch (err) {
-      if (!signal?.aborted) {
-        setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+  const fetchRoundData = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        const roundData = await roundService.getById(id!, signal && { signal });
+        if (!roundData.matches || !roundData.players)
+          throw new Error("Invalid round data structure");
+        setRound(roundData);
+        setError(null);
+      } catch (err) {
+        if (!signal?.aborted) {
+          setError(
+            err instanceof Error ? err.message : "An unexpected error occurred",
+          );
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
+    },
+    [id],
+  );
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -94,38 +117,64 @@ const RoundPage: React.FC = () => {
     return () => abortController.abort();
   }, [fetchRoundData]);
 
-  const createHandler = (service: any, successMessage: string) =>
-    useCallback(async (formData: any) => {
-      try {
-        const created = await service.create(formData);
-        setMessage(`${successMessage} "${created.name}" criado com sucesso!`);
-        setOpen(true);
-        await fetchRoundData();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro desconhecido');
-      }
-    }, [fetchRoundData]);
+  const useCreateHandler = <T extends { name: string }>(
+    service: ServiceType<T>,
+    successMessage: string,
+    fetchRoundData: () => Promise<void>
+  ) => {
+    return useCallback(
+      async (formData: T) => {
+        try {
+          const created = await service.create(formData);
+          setMessage(`${successMessage} "${created.name}" criado com sucesso!`);
+          setOpen(true);
+          await fetchRoundData();
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Erro desconhecido");
+        }
+      },
+      [service, successMessage, fetchRoundData]
+    );
+  };
 
-  const handleCreateMatch = createHandler(matchService, 'Partida');
-  const handleCreatePlayer = createHandler(playerService, 'Jogador');
-  const handleCreateTeam = createHandler(teamService, 'Time');
+  const handleCreateMatch = useCreateHandler(
+    matchService,
+    'Partida',
+    fetchRoundData
+  );
 
-  const handleCardClick = useCallback((matchId: string) => {
-    navigate(`/matches/${matchId}`);
-  }, [navigate]);
+  const handleCreatePlayer = useCreateHandler(
+    playerService,
+    'Jogador',
+    fetchRoundData
+  );
+
+  const handleCreateTeam = useCreateHandler(
+    teamService,
+    'Time',
+    fetchRoundData
+  );
+
+  const handleCardClick = useCallback(
+    (matchId: string) => {
+      navigate(`/matches/${matchId}`);
+    },
+    [navigate],
+  );
 
   const handleBackClick = useCallback(() => navigate(-1), [navigate]);
 
-  const handleClose = useCallback((
-    _event: React.SyntheticEvent | Event,
-    reason?: SnackbarCloseReason,
-  ) => {
-    if (reason === "clickaway") return;
-    setOpen(false);
-  }, []);
+  const handleClose = useCallback(
+    (_event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
+      if (reason === "clickaway") return;
+      setOpen(false);
+    },
+    [],
+  );
 
   if (loading) return <div className="text-center py-12">Loading...</div>;
-  if (error) return <div className="text-red-500 text-center py-12">Error: {error}</div>;
+  if (error)
+    return <div className="text-red-500 text-center py-12">Error: {error}</div>;
   if (!round) return <div className="text-center py-12">Round not found</div>;
 
   return (
@@ -137,10 +186,15 @@ const RoundPage: React.FC = () => {
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
           <div>
-            <button onClick={handleBackClick} className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4">
+            <button
+              onClick={handleBackClick}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4"
+            >
               <FaArrowLeft /> Voltar
             </button>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">{round.name}</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              {round.name}
+            </h1>
             <p className="text-gray-600">
               {format(new Date(round.round_date), "dd MMMM yyyy")}
             </p>
@@ -156,18 +210,22 @@ const RoundPage: React.FC = () => {
           title="Partidas"
           icon={<FaFutbol className="text-green-500" />}
           addLabel="Criar Partida"
-          onAdd={() => setModals(prev => ({...prev, match: true}))}
+          onAdd={() => setModals((prev) => ({ ...prev, match: true }))}
         >
           <CreateMatchModal
             isOpen={modals.match}
-            onClose={() => setModals(prev => ({...prev, match: false}))}
+            onClose={() => setModals((prev) => ({ ...prev, match: false }))}
             onCreate={handleCreateMatch}
             teams={round.teams}
           />
 
           <div className="space-y-4">
-            {round.matches?.map(match => (
-              <MatchItem key={match.id} match={match} onClick={handleCardClick} />
+            {round.matches?.map((match) => (
+              <MatchItem
+                key={match.id}
+                match={match}
+                onClick={handleCardClick}
+              />
             ))}
             {!round.matches?.length && (
               <div className="text-center py-8 text-gray-500">
@@ -181,19 +239,29 @@ const RoundPage: React.FC = () => {
           title="Jogadores"
           icon={<FaUser className="text-blue-500" />}
           addLabel="Criar Jogador"
-          onAdd={() => setModals(prev => ({...prev, player: true}))}
+          onAdd={() => setModals((prev) => ({ ...prev, player: true }))}
         >
           <CreatePlayerModal
             isOpen={modals.player}
-            onClose={() => setModals(prev => ({...prev, player: false}))}
+            onClose={() => setModals((prev) => ({ ...prev, player: false }))}
             onCreate={handleCreatePlayer}
+            championshipId={round?.championship_id}
+            currentPlayers={round?.players || []}
           />
 
-          <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder="Buscar jogador..." />
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Buscar jogador..."
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredPlayers.map(player => <PlayerItem key={player.id} player={player} />)}
-            {!filteredPlayers.length && <EmptyState message="Nenhum jogador encontrado" />}
+            {filteredPlayers.map((player) => (
+              <PlayerItem key={player.id} player={player} />
+            ))}
+            {!filteredPlayers.length && (
+              <EmptyState message="Nenhum jogador encontrado" />
+            )}
           </div>
         </Section>
 
@@ -201,19 +269,28 @@ const RoundPage: React.FC = () => {
           title="Times"
           icon={<FaUsers className="text-blue-500" />}
           addLabel="Criar Time"
-          onAdd={() => setModals(prev => ({...prev, team: true}))}
+          onAdd={() => setModals((prev) => ({ ...prev, team: true }))}
         >
           <CreateTeamModal
             isOpen={modals.team}
-            onClose={() => setModals(prev => ({...prev, team: false}))}
+            onClose={() => setModals((prev) => ({ ...prev, team: false }))}
             onCreate={handleCreateTeam}
+            roundId={id}
           />
 
-          <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder="Buscar time..." />
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Buscar time..."
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredTeams.map(team => <TeamItem key={team.id} team={team} />)}
-            {!filteredTeams.length && <EmptyState message="Nenhum time encontrado" />}
+            {filteredTeams.map((team) => (
+              <TeamItem key={team.id} team={team} />
+            ))}
+            {!filteredTeams.length && (
+              <EmptyState message="Nenhum time encontrado" />
+            )}
           </div>
         </Section>
 
@@ -246,7 +323,9 @@ const MatchItem = React.memo(({ match, onClick }) => (
         {format(new Date(match.created_at), "dd/MM/yyyy")}
       </span>
       <span className="text-sm text-gray-500">{match.name}</span>
-      <span className={`px-2 py-1 rounded-full text-sm ${match.winning_team ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}>
+      <span
+        className={`px-2 py-1 rounded-full text-sm ${match.winning_team ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}
+      >
         {match.winning_team ? "Finalizado" : "Agendado"}
       </span>
     </div>
@@ -312,9 +391,7 @@ const SearchInput = ({ value, onChange, placeholder }) => (
 );
 
 const EmptyState = ({ message }) => (
-  <div className="col-span-full text-center py-8 text-gray-500">
-    {message}
-  </div>
+  <div className="col-span-full text-center py-8 text-gray-500">{message}</div>
 );
 
 export default RoundPage;

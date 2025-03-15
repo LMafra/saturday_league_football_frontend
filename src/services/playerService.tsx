@@ -12,8 +12,9 @@ const api = axios.create({
 // Player API service
 const playerService = {
   // Fetch all player
-  getAll: async () => {
-    const response = await api.get("/");
+  getAll: async (championshipId?: string) => {
+    const params = championshipId ? { params: { championship_id: championshipId } } : {};
+    const response = await api.get("/", params);
     return response.data;
   },
 
@@ -38,6 +39,15 @@ const playerService = {
   // Delete a player
   delete: async (id: string) => {
     const response = await api.delete(`/${id}`);
+    return response.data;
+  },
+
+  // Add to round
+
+  addToRound: async (id: string, roundId: string) => {
+    const response = await api.post(`/${id}/add_to_round`, {
+      round_id: roundId
+    });
     return response.data;
   },
 };
