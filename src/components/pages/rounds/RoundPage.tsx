@@ -65,29 +65,31 @@ const RoundPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [playerSearch, setPlayerSearch] = useState("");
+  const [teamSearch, setTeamSearch] = useState("");
   const [modals, setModals] = useState({
     match: false,
     player: false,
     team: false,
   });
 
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const debouncedPlayerSearch = useDebounce(playerSearch, 300);
+  const debouncedTeamSearch = useDebounce(teamSearch, 300);
 
   const filteredPlayers = useMemo(
     () =>
-      round?.players?.filter((player) =>
-        player.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()),
+      round?.players?.filter((p) =>
+        p.name.toLowerCase().includes(debouncedPlayerSearch.toLowerCase()),
       ) || [],
-    [round, debouncedSearchQuery],
+    [round, debouncedPlayerSearch],
   );
 
   const filteredTeams = useMemo(
     () =>
-      round?.teams?.filter((team) =>
-        team.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()),
+      round?.teams?.filter((t) =>
+        t.name.toLowerCase().includes(debouncedTeamSearch.toLowerCase()),
       ) || [],
-    [round, debouncedSearchQuery],
+    [round, debouncedTeamSearch],
   );
 
   const fetchRoundData = useCallback(
@@ -120,7 +122,7 @@ const RoundPage: React.FC = () => {
   const useCreateHandler = <T extends { name: string }>(
     service: ServiceType<T>,
     successMessage: string,
-    fetchRoundData: () => Promise<void>
+    fetchRoundData: () => Promise<void>,
   ) => {
     return useCallback(
       async (formData: T) => {
@@ -133,31 +135,45 @@ const RoundPage: React.FC = () => {
           setError(err instanceof Error ? err.message : "Erro desconhecido");
         }
       },
-      [service, successMessage, fetchRoundData]
+      [service, successMessage, fetchRoundData],
     );
   };
 
   const handleCreateMatch = useCreateHandler(
     matchService,
-    'Partida',
-    fetchRoundData
+    "Partida",
+    fetchRoundData,
   );
 
   const handleCreatePlayer = useCreateHandler(
     playerService,
-    'Jogador',
-    fetchRoundData
+    "Jogador",
+    fetchRoundData,
   );
 
   const handleCreateTeam = useCreateHandler(
     teamService,
-    'Time',
-    fetchRoundData
+    "Time",
+    fetchRoundData,
   );
 
-  const handleCardClick = useCallback(
+  const handleMatchCardClick = useCallback(
     (matchId: string) => {
       navigate(`/matches/${matchId}`);
+    },
+    [navigate],
+  );
+
+  const handlePlayerCardClick = useCallback(
+    (playerId: string) => {
+      navigate(`/players/${playerId}`);
+    },
+    [navigate],
+  );
+
+  const handleTeamCardClick = useCallback(
+    (teamId: string) => {
+      navigate(`/teams/${teamId}`);
     },
     [navigate],
   );
@@ -224,7 +240,7 @@ const RoundPage: React.FC = () => {
               <MatchItem
                 key={match.id}
                 match={match}
-                onClick={handleCardClick}
+                onClick={handleMatchCardClick}
               />
             ))}
             {!round.matches?.length && (
@@ -250,14 +266,17 @@ const RoundPage: React.FC = () => {
           />
 
           <SearchInput
-            value={searchQuery}
-            onChange={setSearchQuery}
+            value={playerSearch}
+            onChange={setPlayerSearch}
             placeholder="Buscar jogador..."
           />
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredPlayers.map((player) => (
-              <PlayerItem key={player.id} player={player} />
+              <PlayerItem
+                key={player.id}
+                player={player}
+                onClick={handlePlayerCardClick}
+              />
             ))}
             {!filteredPlayers.length && (
               <EmptyState message="Nenhum jogador encontrado" />
@@ -279,14 +298,18 @@ const RoundPage: React.FC = () => {
           />
 
           <SearchInput
-            value={searchQuery}
-            onChange={setSearchQuery}
+            value={teamSearch}
+            onChange={setTeamSearch}
             placeholder="Buscar time..."
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredTeams.map((team) => (
-              <TeamItem key={team.id} team={team} />
+              <TeamItem
+                key={team.id}
+                team={team}
+                onClick={handleTeamCardClick}
+              />
             ))}
             {!filteredTeams.length && (
               <EmptyState message="Nenhum time encontrado" />
@@ -340,9 +363,10 @@ const MatchItem = React.memo(({ match, onClick }) => (
   </motion.div>
 ));
 
-const PlayerItem = React.memo(({ player }) => (
+const PlayerItem = React.memo(({ player, onClick }) => (
   <motion.div
     variants={itemVariants}
+    onClick={() => onClick(player.id)}
     className="border rounded-xl p-4 hover:bg-gray-50 transition-colors"
   >
     <div className="flex items-center gap-4">
@@ -361,9 +385,10 @@ const PlayerItem = React.memo(({ player }) => (
   </motion.div>
 ));
 
-const TeamItem = React.memo(({ team }) => (
+const TeamItem = React.memo(({ team, onClick }) => (
   <motion.div
     variants={itemVariants}
+    onClick={() => onClick(team.id)}
     className="border rounded-xl p-4 hover:bg-gray-50 transition-colors"
   >
     <div className="flex items-center gap-4">

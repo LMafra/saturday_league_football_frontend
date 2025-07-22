@@ -67,8 +67,12 @@ const ChampionshipPage: React.FC = () => {
     setOpen(false);
   };
 
-  const handleCardClick = (roundId: string) => {
+  const handleRoundCardClick = (roundId: string) => {
     navigate(`/rounds/${roundId}`);
+  };
+
+  const handlePlayerCardClick = (playerId: string) => {
+    navigate(`/players/${playerId}`);
   };
 
   const handleBackClick = () => {
@@ -149,7 +153,7 @@ const ChampionshipPage: React.FC = () => {
               key={round.id}
               whileHover={{ scale: 1.02 }}
               className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-              onClick={() => handleCardClick(round.id)}
+              onClick={() => handleRoundCardClick(round.id)}
             >
               <h3 className="font-semibold text-lg mb-2">{round.name}</h3>
               <p className="text-sm text-gray-500">
@@ -177,6 +181,7 @@ const ChampionshipPage: React.FC = () => {
           {championship.players?.map((player) => (
             <div
               key={player.id}
+              onClick={() => handlePlayerCardClick(player.id)}
               className="flex items-center space-x-4 p-3 border rounded-lg hover:bg-gray-50"
             >
               <div className="flex-shrink-0">

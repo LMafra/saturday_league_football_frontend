@@ -28,11 +28,27 @@ export interface Player {
   position?: string;
   created_at: string;
   updated_at: string;
+  total_goals: number;
+  total_assists: number;
+  total_own_goals: number;
   rounds?: Round[];
+  player_stats?: PlayerStat[];
+}
+
+export interface PlayerStat {
+  id: string;
+  goals: number;
+  own_goals: number;
+  assists: number;
+  was_goalkeeper: boolean;
+  match_id: string;
+  team_id: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Match {
-  id: number;
+  id: string;
   name: string;
   team_1: Team;
   team_2: Team;
@@ -55,4 +71,7 @@ export interface Match {
 export interface Team {
   id: string;
   name: string;
+  created_at: string;
+  updated_at: string;
+  players?: Player[];
 }
