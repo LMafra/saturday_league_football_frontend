@@ -23,29 +23,24 @@ export const usePlayerModalLogic = (
   // Player fetching logic
   useEffect(() => {
     const fetchPlayers = async () => {
-      try {
-        if (playersFromRound && playersFromRound.length > 0) {
-          setExistingPlayers(playersFromRound);
-        } else if (championshipId) {
+      if (championshipId && isOpen) {
+        try {
           const players = await playerService.getAll(championshipId);
           const availablePlayers = players.filter(
             (player) => !currentPlayerIds.has(player.id),
           );
           setExistingPlayers(availablePlayers);
-        } else if (context === "team") {
-          const players = await playerService.getAll();
-          const availablePlayers = players.filter(
-            (player) => !currentPlayerIds.has(player.id),
-          );
-          setExistingPlayers(availablePlayers);
+        } catch (err) {
+          setError("Failed to load existing players");
         }
-      } catch (err) {
-        setError("Failed to load existing players");
       }
     };
 
-    if (isOpen) fetchPlayers();
-  }, [championshipId, isOpen, currentPlayerIds, playersFromRound, context]);
+    // Only fetch if modal is open and we haven't fetched yet
+    if (isOpen && existingPlayers.length === 0) {
+      fetchPlayers();
+    }
+  }, [championshipId, isOpen]); // Removed currentPlayerIds dependency
 
   const filteredPlayers = useMemo(() => {
     if (!searchTerm) return [];
@@ -61,7 +56,7 @@ export const usePlayerModalLogic = (
       setSearchTerm(e.target.value);
       setSelectedPlayer(null);
     },
-    []
+    [],
   );
 
   const handleSelectPlayer = useCallback((player: Player) => {
@@ -79,6 +74,6 @@ export const usePlayerModalLogic = (
     error,
     setError,
     handleSearchChange,
-    handleSelectPlayer
+    handleSelectPlayer,
   };
 };

@@ -173,9 +173,11 @@ const RoundPage: React.FC = () => {
 
   const handleTeamCardClick = useCallback(
     (teamId: string) => {
-      navigate(`/teams/${teamId}`);
+      navigate(`/teams/${teamId}`, {
+        state: { roundId: id },
+      });
     },
-    [navigate],
+    [navigate, id],
   );
 
   const handleBackClick = useCallback(() => navigate(-1), [navigate]);
@@ -187,6 +189,8 @@ const RoundPage: React.FC = () => {
     },
     [],
   );
+
+  const currentPlayers = useMemo(() => round?.players || [], [round?.players]);
 
   if (loading) return <div className="text-center py-12">Loading...</div>;
   if (error)
@@ -262,7 +266,7 @@ const RoundPage: React.FC = () => {
             onClose={() => setModals((prev) => ({ ...prev, player: false }))}
             onCreate={handleCreatePlayer}
             championshipId={round?.championship_id}
-            currentPlayers={round?.players || []}
+            currentPlayers={currentPlayers}
           />
 
           <SearchInput

@@ -50,6 +50,7 @@ export interface PlayerStat {
 export interface Match {
   id: string;
   name: string;
+  round_id: string;
   team_1: Team;
   team_2: Team;
   team_1_players: Player[];
@@ -73,5 +74,6 @@ export interface Team {
   name: string;
   created_at: string;
   updated_at: string;
+  matches?: Match[];
   players?: Player[];
 }

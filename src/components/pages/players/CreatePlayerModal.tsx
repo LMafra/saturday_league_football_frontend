@@ -1,12 +1,9 @@
 // CreatePlayerModal.tsx
-import React, { useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useCallback } from "react";
 import { useParams } from "react-router-dom";
-import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
-import { ModalHeader } from "../../modal/ModalHeader";
+import { BaseModal } from "../../modal/BaseModal";
 import { RoundFilterSection } from "../rounds/RoundFilterSection";
 import { PlayerSearchInput } from "./PlayerSearchInput";
-import { ActionButtons } from "../../modal/ActionButtons";
 import { usePlayerModalLogic } from "../../../hooks/usePlayerModalLogic";
 import { Player, Round } from "../../../types";
 import playerService from "../../../services/playerService";
@@ -38,13 +35,11 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
   rounds = [],
   playersFromRound = [],
   selectedRoundId = null,
-  onRoundChange = () => {}
+  onRoundChange = () => {},
 }) => {
   const { id: routeId } = useParams<{ id: string }>();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [showRoundFilter, setShowRoundFilter] = useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [showRoundFilter, setShowRoundFilter] = React.useState(false);
 
   const {
     searchTerm,
@@ -56,7 +51,7 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
     error,
     setError,
     handleSearchChange,
-    handleSelectPlayer
+    handleSelectPlayer,
   } = usePlayerModalLogic(
     isOpen,
     championshipId,
@@ -65,18 +60,13 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
     playersFromRound,
   );
 
-  // Determine target ID based on context
-  const targetId = context === "team"
-    ? routeId
-    : selectedRoundId || routeId;
+  const targetId = context === "team" ? routeId : selectedRoundId || routeId;
 
-  const handleCloseSnackbar = useCallback(
-    (_event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
-      if (reason === "clickaway") return;
-      setOpenSnackbar(false);
-    },
-    [],
-  );
+  const handleClose = useCallback(() => {
+    setSearchTerm("");
+    setSelectedPlayer(null);
+    onClose();
+  }, [onClose]);
 
   const handleSubmit = useCallback(async () => {
     setIsSubmitting(true);
@@ -86,10 +76,8 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
       if (selectedPlayer) {
         if (context === "round") {
           await playerService.addToRound(selectedPlayer.id, targetId!);
-          setMessage(`${selectedPlayer.name} added to round!`);
         } else if (context === "team") {
           await playerService.addToTeam(selectedPlayer.id, targetId!);
-          setMessage(`${selectedPlayer.name} added to team!`);
         }
       } else {
         const createData: {
@@ -99,115 +87,81 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
         } = { name: searchTerm };
 
         if (context === "round") {
-          createData.player_rounds_attributes = targetId ? [{ round_id: targetId }] : [];
+          createData.player_rounds_attributes = targetId
+            ? [{ round_id: targetId }]
+            : [];
         } else if (context === "team") {
           createData.team_id = targetId;
         }
 
         await onCreate(createData);
-        setMessage(`${searchTerm} created successfully!`);
       }
-
-      setOpenSnackbar(true);
-      onClose();
-      setSearchTerm("");
-      setSelectedPlayer(null);
+      handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Submission failed");
     } finally {
       setIsSubmitting(false);
     }
-  }, [selectedPlayer, searchTerm, context, targetId, onCreate, onClose]);
+  }, [selectedPlayer, searchTerm, context, targetId, onCreate, handleClose]);
+
+  const title = selectedPlayer
+    ? `Add Player to ${context === "team" ? "Team" : "Round"}`
+    : `Create Player for ${context === "team" ? "Team" : "Round"}`;
+
+  const submitLabel = isSubmitting
+    ? selectedPlayer
+      ? "Adding..."
+      : "Creating..."
+    : selectedPlayer
+      ? `Add to ${context === "team" ? "Team" : "Round"}`
+      : "Create Player";
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        >
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={onClose}
+    <BaseModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={title}
+      formId="player-form"
+      isSubmitting={isSubmitting}
+      submitDisabled={isSubmitting || !searchTerm}
+      submitLabel={submitLabel}
+    >
+      <form
+        id="player-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmit();
+        }}
+      >
+        <RoundFilterSection
+          context={context}
+          rounds={rounds}
+          showRoundFilter={showRoundFilter}
+          selectedRoundId={selectedRoundId}
+          onToggleFilter={() => setShowRoundFilter(!showRoundFilter)}
+          onRoundChange={onRoundChange}
+          existingPlayers={existingPlayers}
+        />
+
+        <div className="space-y-6">
+          <PlayerSearchInput
+            searchTerm={searchTerm}
+            selectedPlayer={selectedPlayer}
+            context={context}
+            filteredPlayers={filteredPlayers}
+            onSearchChange={handleSearchChange}
+            onSelectPlayer={handleSelectPlayer}
+            onSubmit={handleSubmit}
           />
 
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -20, opacity: 0 }}
-            className="relative w-full max-w-md bg-white rounded-2xl shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ModalHeader
-              context={context}
-              selectedPlayer={selectedPlayer}
-              onClose={onClose}
-            />
-
-            <RoundFilterSection
-              context={context}
-              rounds={rounds}
-              showRoundFilter={showRoundFilter}
-              selectedRoundId={selectedRoundId}
-              onToggleFilter={() => setShowRoundFilter(!showRoundFilter)}
-              onRoundChange={onRoundChange}
-              existingPlayers={existingPlayers}
-            />
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSubmit();
-              }}
-              className="p-6"
-            >
-              <div className="space-y-6">
-                <PlayerSearchInput
-                  searchTerm={searchTerm}
-                  selectedPlayer={selectedPlayer}
-                  context={context}
-                  filteredPlayers={filteredPlayers}
-                  onSearchChange={handleSearchChange}
-                  onSelectPlayer={handleSelectPlayer}
-                  onSubmit={handleSubmit}
-                />
-
-                {error && (
-                  <div className="p-3 bg-red-50 border border-red-100 rounded-lg">
-                    <span className="text-red-600 text-sm">{error}</span>
-                  </div>
-                )}
-              </div>
-
-              <ActionButtons
-                isSubmitting={isSubmitting}
-                searchTerm={searchTerm}
-                selectedPlayer={selectedPlayer}
-                context={context}
-                onClose={onClose}
-                onSubmit={handleSubmit}
-              />
-            </form>
-
-            <Snackbar
-              open={openSnackbar}
-              autoHideDuration={6000}
-              onClose={handleCloseSnackbar}
-              message={message}
-              anchorOrigin={{ vertical: "top", horizontal: "right" }}
-              sx={{
-                "& .MuiSnackbarContent-root": {
-                  backgroundColor: "#2563eb",
-                  color: "#fff",
-                },
-              }}
-            />
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-100 rounded-lg">
+              <span className="text-red-600 text-sm">{error}</span>
+            </div>
+          )}
+        </div>
+      </form>
+    </BaseModal>
   );
 };
 

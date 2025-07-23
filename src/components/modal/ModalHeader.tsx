@@ -12,14 +12,13 @@ interface ModalHeaderProps {
 export const ModalHeader: React.FC<ModalHeaderProps> = ({
   context,
   selectedPlayer,
-  onClose
+  onClose,
 }) => (
   <div className="flex items-center justify-between p-6 border-b">
     <h3 className="text-2xl font-bold text-gray-900">
       {selectedPlayer
         ? `Add Player to ${context === "team" ? "Team" : "Round"}`
-        : `Create Player for ${context === "team" ? "Team" : "Round"}`
-      }
+        : `Create Player for ${context === "team" ? "Team" : "Round"}`}
     </h3>
     <button
       onClick={onClose}

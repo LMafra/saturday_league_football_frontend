@@ -17,7 +17,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   selectedPlayer,
   context,
   onClose,
-  onSubmit
+  onSubmit,
 }) => (
   <div className="mt-8 flex justify-end gap-3">
     <button

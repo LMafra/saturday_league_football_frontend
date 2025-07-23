@@ -59,6 +59,14 @@ const playerService = {
     });
     return response.data;
   },
+
+  // Match Stats
+  matchStats: async (id: string, matchId: string) => {
+    const response = await api.get(`/${id}/match_stats`, {
+      match_id: matchId,
+    });
+    return response.data;
+  },
 };
 
 export default playerService;

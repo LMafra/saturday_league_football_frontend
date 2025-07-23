@@ -21,7 +21,7 @@ export const RoundFilterSection: React.FC<RoundFilterSectionProps> = ({
   selectedRoundId,
   onToggleFilter,
   onRoundChange,
-  existingPlayers
+  existingPlayers,
 }) => {
   if (context !== "round" || rounds.length === 0) return null;
 
@@ -44,9 +44,10 @@ export const RoundFilterSection: React.FC<RoundFilterSectionProps> = ({
             onChange={(e) => onRoundChange(e.target.value)}
             className="w-full p-2 border rounded-lg text-sm"
           >
-            {rounds.map(round => (
+            {rounds.map((round) => (
               <option key={round.id} value={round.id}>
-                {round.name} ({format(new Date(round.round_date), "dd/MM/yyyy")})
+                {round.name} ({format(new Date(round.round_date), "dd/MM/yyyy")}
+                )
               </option>
             ))}
           </select>

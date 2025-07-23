@@ -21,7 +21,7 @@ export const PlayerSearchInput: React.FC<PlayerSearchInputProps> = ({
   filteredPlayers,
   onSearchChange,
   onSelectPlayer,
-  onSubmit
+  onSubmit,
 }) => (
   <div className="space-y-6">
     <div>
