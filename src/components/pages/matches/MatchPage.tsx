@@ -7,7 +7,7 @@ import matchService from "../../../services/matchService";
 import { Match } from "../../../types";
 
 const MatchPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: number }>();
   const [match, setMatch] = useState<Match | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

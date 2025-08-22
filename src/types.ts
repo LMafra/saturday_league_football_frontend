@@ -1,5 +1,5 @@
 export interface Championship {
-  id: string;
+  id: number;
   name: string;
   description?: string;
   created_at: string;
@@ -11,10 +11,10 @@ export interface Championship {
 }
 
 export interface Round {
-  id: string;
+  id: number;
   name: string;
   round_date: string;
-  championship_id: string;
+  championship_id: number;
   created_at: string;
   updated_at: string;
   matches?: Match[];
@@ -23,7 +23,7 @@ export interface Round {
 }
 
 export interface Player {
-  id: string;
+  id: number;
   name: string;
   position?: string;
   created_at: string;
@@ -36,21 +36,21 @@ export interface Player {
 }
 
 export interface PlayerStat {
-  id: string;
+  id: number;
   goals: number;
   own_goals: number;
   assists: number;
   was_goalkeeper: boolean;
-  match_id: string;
-  team_id: string;
+  match_id: number;
+  team_id: number;
   created_at: string;
   updated_at: string;
 }
 
 export interface Match {
-  id: string;
+  id: number;
   name: string;
-  round_id: string;
+  round_id: number;
   team_1: Team;
   team_2: Team;
   team_1_players: Player[];
@@ -70,7 +70,7 @@ export interface Match {
 }
 
 export interface Team {
-  id: string;
+  id: number;
   name: string;
   created_at: string;
   updated_at: string;

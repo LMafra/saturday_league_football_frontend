@@ -18,7 +18,7 @@ const championshipService = {
   },
 
   // Fetch a single championship by ID
-  getById: async (id: string) => {
+  getById: async (id: number) => {
     const response = await api.get(`/${id}`);
     return response.data;
   },
@@ -30,13 +30,13 @@ const championshipService = {
   },
 
   // Update an existing championship
-  update: async (id: string, data: unknown) => {
+  update: async (id: number, data: unknown) => {
     const response = await api.put(`/${id}`, data);
     return response.data;
   },
 
   // Delete a championship
-  delete: async (id: string) => {
+  delete: async (id: number) => {
     const response = await api.delete(`/${id}`);
     return response.data;
   },

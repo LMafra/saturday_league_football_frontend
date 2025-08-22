@@ -51,7 +51,7 @@ const RoundCard = ({
   onClick,
 }: {
   round: any;
-  onClick: (id: string) => void;
+  onClick: (id: number) => void;
 }) => (
   <motion.div
     whileHover={{ scale: 1.02 }}
@@ -112,7 +112,7 @@ const MatchStatCard = ({ stat }: { stat: PlayerStat }) => (
 );
 
 const PlayerPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: number }>();
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -160,7 +160,7 @@ const PlayerPage: React.FC = () => {
 
   const handleBackClick = useCallback(() => navigate(-1), [navigate]);
   const handleRoundClick = useCallback(
-    (roundId: string) => navigate(`/rounds/${roundId}`),
+    (roundId: number) => navigate(`/rounds/${roundId}`),
     [navigate],
   );
 

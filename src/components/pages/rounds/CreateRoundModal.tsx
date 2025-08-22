@@ -11,7 +11,7 @@ interface ModalProps {
   onCreate: (formData: {
     name: string;
     round_date: string;
-    championship_id: string;
+    championship_id: number;
   }) => Promise<void>;
 }
 
@@ -20,7 +20,7 @@ const CreateRoundModal: React.FC<ModalProps> = ({
   onClose,
   onCreate,
 }) => {
-  const { id: championshipId } = useParams<{ id: string }>();
+  const { id: championshipId } = useParams<{ id: number }>();
   const {
     formData,
     setFormData,

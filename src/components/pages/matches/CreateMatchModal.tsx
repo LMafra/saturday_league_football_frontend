@@ -11,7 +11,7 @@ interface ModalProps {
     name: string;
     team_1_id: number;
     team_2_id: number;
-    round_id: string;
+    round_id: number;
     date: string;
   }) => Promise<void>;
   teams: { id: number; name: string }[];
@@ -23,7 +23,7 @@ const CreateMatchModal: React.FC<ModalProps> = ({
   onCreate,
   teams,
 }) => {
-  const { id: roundId } = useParams<{ id: string }>();
+  const { id: roundId } = useParams<{ id: number }>();
   const {
     formData,
     setFormData,

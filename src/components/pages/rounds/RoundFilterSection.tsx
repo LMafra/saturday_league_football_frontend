@@ -1,4 +1,3 @@
-// RoundFilterSection.tsx
 import React from "react";
 import { FiFilter } from "react-icons/fi";
 import { format } from "date-fns";
@@ -8,9 +7,9 @@ interface RoundFilterSectionProps {
   context: "round" | "team";
   rounds: Round[];
   showRoundFilter: boolean;
-  selectedRoundId: string | null;
+  selectedRoundid: number | null;
   onToggleFilter: () => void;
-  onRoundChange: (roundId: string) => void;
+  onRoundChange: (roundId: number) => void;
   existingPlayers: Player[];
 }
 

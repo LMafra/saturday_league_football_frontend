@@ -18,7 +18,7 @@ const teamService = {
   },
 
   // Fetch a single team by ID
-  getById: async (id: string) => {
+  getById: async (id: number) => {
     const response = await api.get(`/${id}`);
     return response.data;
   },
@@ -30,13 +30,13 @@ const teamService = {
   },
 
   // Update an existing team
-  update: async (id: string, data: unknown) => {
+  update: async (id: number, data: unknown) => {
     const response = await api.put(`/${id}`, data);
     return response.data;
   },
 
   // Delete a team
-  delete: async (id: string) => {
+  delete: async (id: number) => {
     const response = await api.delete(`/${id}`);
     return response.data;
   },

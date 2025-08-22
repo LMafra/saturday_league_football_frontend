@@ -10,7 +10,7 @@ import CreateRoundModal from "../rounds/CreateRoundModal";
 import { Championship } from "../../../types";
 
 const ChampionshipPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: number }>();
   const [championship, setChampionship] = useState<Championship | null>(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,7 +41,7 @@ const ChampionshipPage: React.FC = () => {
   const handleCreateRound = async (formData: {
     name: string;
     round_date: string;
-    championship_id: string;
+    championship_id: number;
   }) => {
     try {
       const createdRound = await roundService.create(formData);
@@ -67,16 +67,16 @@ const ChampionshipPage: React.FC = () => {
     setOpen(false);
   };
 
-  const handleRoundCardClick = (roundId: string) => {
+  const handleRoundCardClick = (roundId: number) => {
     navigate(`/rounds/${roundId}`);
   };
 
-  const handlePlayerCardClick = (playerId: string) => {
+  const handlePlayerCardClick = (playerId: number) => {
     navigate(`/players/${playerId}`);
   };
 
   const handleBackClick = () => {
-    navigate(-1); // Go back to the previous page
+    navigate(-1);
   };
 
   if (loading) return <div className="text-center py-8">Loading...</div>;

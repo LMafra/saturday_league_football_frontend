@@ -6,8 +6,8 @@ import { useModalForm } from "../../../hooks/useModalForm";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (formData: { name: string; round_id: string }) => Promise<void>;
-  roundId: string;
+  onCreate: (formData: { name: string; round_id: number }) => Promise<void>;
+  roundId: number;
 }
 
 const CreateTeamModal: React.FC<ModalProps> = ({

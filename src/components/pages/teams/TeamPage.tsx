@@ -7,9 +7,7 @@ import {
   FaChartLine,
   FaFutbol,
   FaMedal,
-  FaSearch,
   FaPlus,
-  FaTimes,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 import {
@@ -21,195 +19,39 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import { Team, Player, Match, PlayerStat } from "../../../types";
+import { Team, Player, Match } from "../../../types";
 import CreatePlayerModal from "../players/CreatePlayerModal";
+import PlayerCard from "../../card/PlayerCard";
+import StatCard from "../../card/StatCard";
+import SearchInput from "../../search/SearchInput";
 import teamService from "../../../services/teamService";
 import playerService from "../../../services/playerService";
 import roundService from "../../../services/roundService";
-
-const StatCard = ({
-  title,
-  value,
-  icon,
-  color,
-}: {
-  title: string;
-  value: number | string;
-  icon: React.ReactNode;
-  color: string;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.3 }}
-    className={`bg-white rounded-xl shadow-md p-4 border-l-4 ${color} flex items-center justify-between`}
-  >
-    <div>
-      <p className="text-gray-500 text-sm">{title}</p>
-      <p className="text-2xl font-bold">{value}</p>
-    </div>
-    <div className="text-2xl">{icon}</div>
-  </motion.div>
-);
-
-const PlayerCard = ({
-  player,
-  team,
-  selectedRoundId,
-  onClick,
-  onPlayerMatchSelect,
-  selectedPlayerId,
-  selectedMatchId,
-  playerStats,
-}: {
-  player: Player;
-  team: Team;
-  selectedRoundId: string | null;
-  onClick: (id: string) => void;
-  onPlayerMatchSelect: (playerId: string, matchId: string) => void;
-  selectedPlayerId: string | null;
-  selectedMatchId: string | null;
-  playerStats: Record<string, any> | null;
-}) => {
-  // Calculate player stats for the selected round
-  const roundMatches = useMemo(() => {
-    if (!selectedRoundId || !team.matches) return [];
-    return team.matches.filter(
-      (match) => match.round_id.toString() === selectedRoundId
-    );
-  }, [selectedRoundId, team]);
-
-  const playerRoundStats = useMemo(() => {
-    return roundMatches.reduce(
-      (stats, match) => {
-        const matchStats = player.player_stats?.find(
-          (ps) => ps.match_id === match.id
-        );
-        if (matchStats) {
-          stats.goals += matchStats.goals || 0;
-          stats.assists += matchStats.assists || 0;
-          stats.matches++;
-        }
-        return stats;
-      },
-      { goals: 0, assists: 0, matches: 0 }
-    );
-  }, [roundMatches, player]);
-
-  return (
-    <motion.div
-      whileHover={{ scale: 1.03 }}
-      whileTap={{ scale: 0.98 }}
-      className="bg-white rounded-xl shadow-sm p-4 border cursor-pointer hover:bg-gray-50 transition-colors"
-    >
-      <div
-        className="flex items-center gap-4"
-        onClick={() => onClick(player.id)}
-      >
-        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-          <span className="text-blue-600 font-bold">
-            {player.name.charAt(0).toUpperCase()}
-          </span>
-        </div>
-        <div>
-          <h3 className="font-semibold">{player.name}</h3>
-          {selectedRoundId && (
-            <p className="text-sm text-gray-500">
-              Estatísticas da Rodada {selectedRoundId}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        <div className="text-center">
-          <p className="text-sm font-medium">Jogos</p>
-          <p className="text-lg">{playerRoundStats.matches}</p>
-        </div>
-        <div className="text-center">
-          <p className="text-sm font-medium">Gols</p>
-          <p className="text-lg">{playerRoundStats.goals}</p>
-        </div>
-        <div className="text-center">
-          <p className="text-sm font-medium">Assist</p>
-          <p className="text-lg">{playerRoundStats.assists}</p>
-        </div>
-      </div>
-
-      {/* {selectedRoundId && roundMatches.length > 0 && (
-        <div className="mt-4">
-          <p className="text-sm font-medium mb-2">Partidas nesta rodada:</p>
-          <div className="space-y-2">
-            {roundMatches.map((match) => (
-              <div
-                key={match.id}
-                className={`p-2 rounded border text-sm ${
-                  selectedPlayerId === player.id && selectedMatchId === match.id.toString()
-                    ? "bg-blue-50 border-blue-500"
-                    : "hover:bg-gray-100"
-                }`}
-                onClick={() => onPlayerMatchSelect(player.id, match.id.toString())}
-              >
-                <div className="flex justify-between">
-                  <span>
-                    {match.team_1.name} vs {match.team_2.name}
-                  </span>
-                  <span>
-                    {match.team_1_goals}-{match.team_2_goals}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )} */}
-
-      {selectedPlayerId === player.id && selectedMatchId && (
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-          <h4 className="font-medium mb-2">Estatísticas detalhadas:</h4>
-          {playerStats?.[`${player.id}-${selectedMatchId}`] ? (
-            <div className="text-sm">
-              <pre>{JSON.stringify(playerStats[`${player.id}-${selectedMatchId}`], null, 2)}</pre>
-            </div>
-          ) : (
-            <p>Carregando estatísticas...</p>
-          )}
-        </div>
-      )}
-    </motion.div>
-  );
-};
-
-const SearchInput = ({ value, onChange, placeholder }) => (
-  <div className="relative mb-4">
-    <input
-      type="text"
-      placeholder={placeholder}
-      className="pl-10 pr-4 py-2 border rounded-full w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
-    <FaSearch className="absolute left-3 top-3 text-gray-400" />
-  </div>
-);
+import matchService from "../../../services/matchService";
 
 const TeamPage: React.FC = () => {
   const location = useLocation();
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: number }>();
   const navigate = useNavigate();
   const [team, setTeam] = useState<Team | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"players" | "performance">("players");
+  const [activeTab, setActiveTab] = useState<"players" | "performance">(
+    "players",
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(
-    location.state?.roundId || null
+    location.state?.roundId || null,
   );
   const [playersFromTeam, setPlayersFromTeam] = useState<Player[]>([]);
-  const [playerStats, setPlayerStats] = useState<Record<string, any> | null>(null);
-  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
-  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
+  const [playersFromRound, setPlayersFromRound] = useState<Player[]>([]);
+  const [playerStats, setPlayerStats] = useState<Record<string, any> | null>(
+    null,
+  );
+  const [detailedRoundMatches, setDetailedRoundMatches] = useState<Match[]>([]);
+  const [matchLoading, setMatchLoading] = useState(false);
+  const [matchError, setMatchError] = useState<string | null>(null);
 
   const fetchTeamData = useCallback(async () => {
     try {
@@ -224,14 +66,14 @@ const TeamPage: React.FC = () => {
           } catch {
             return player;
           }
-        })
+        }),
       );
 
       setPlayersFromTeam(players);
       setError(null);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
+        err instanceof Error ? err.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -242,10 +84,74 @@ const TeamPage: React.FC = () => {
     fetchTeamData();
   }, [fetchTeamData]);
 
+  const fetchPlayersFromRound = useCallback(async () => {
+    if (!selectedRoundId) return;
+
+    try {
+      const roundData = await roundService.getById(selectedRoundId);
+      setPlayersFromRound(roundData.players || []);
+    } catch (err) {
+      console.error("Failed to fetch players from round:", err);
+    }
+  }, [selectedRoundId]);
+
+  useEffect(() => {
+    if (selectedRoundId) {
+      fetchPlayersFromRound();
+    }
+  }, [selectedRoundId, fetchPlayersFromRound]);
+
+  const fetchDetailedMatches = useCallback(async () => {
+    if (!selectedRoundId || !team?.matches) {
+      setDetailedRoundMatches([]);
+      return;
+    }
+
+    setMatchLoading(true);
+    setMatchError(null);
+
+    try {
+      // Filter matches for the round
+      const roundMatchIds = team.matches
+        .filter((match) => match.round_id.toString() === selectedRoundId)
+        .map((match) => match.id.toString());
+
+      // Fetch detailed match data for each match
+      const detailedMatches = await Promise.all(
+        roundMatchIds.map((id) => matchService.getById(id)),
+      );
+
+      setDetailedRoundMatches(detailedMatches);
+    } catch (err) {
+      setMatchError("Failed to load match details");
+      console.error("Error fetching match details:", err);
+    } finally {
+      setMatchLoading(false);
+    }
+  }, [selectedRoundId, team]);
+
+  useEffect(() => {
+    if (selectedRoundId) {
+      fetchDetailedMatches();
+    } else {
+      setDetailedRoundMatches([]);
+    }
+  }, [selectedRoundId, fetchDetailedMatches]);
+
+  const updatePlayerStats = useCallback(
+    (playerId: number, matchId: number, stats: PlayerMatchStats) => {
+      setPlayerStats((prev) => ({
+        ...prev,
+        [`${playerId}-${matchId}`]: stats,
+      }));
+    },
+    [],
+  );
+
   const handleBackClick = useCallback(() => navigate(-1), [navigate]);
   const handlePlayerClick = useCallback(
-    (playerId: string) => navigate(`/players/${playerId}`),
-    [navigate]
+    (playerId: number) => navigate(`/players/${playerId}`),
+    [navigate],
   );
 
   const handleCreatePlayer = useCallback(
@@ -278,38 +184,7 @@ const TeamPage: React.FC = () => {
         throw err instanceof Error ? err : new Error("Failed to create player");
       }
     },
-    [id]
-  );
-
-  // Fetch player match stats
-  const fetchPlayerMatchStats = useCallback(
-    async (playerId: string, matchId: string) => {
-      try {
-        const stats = await playerService.matchStats(playerId, matchId);
-        setPlayerStats((prev) => ({
-          ...prev,
-          [`${playerId}-${matchId}`]: stats,
-        }));
-      } catch (err) {
-        console.error("Failed to fetch player match stats:", err);
-      }
-    },
-    []
-  );
-
-  // Handle player/match selection
-  const handlePlayerMatchSelect = useCallback(
-    (playerId: string, matchId: string) => {
-      setSelectedPlayerId(playerId);
-      setSelectedMatchId(matchId);
-
-      // Fetch stats if not already in cache
-      const cacheKey = `${playerId}-${matchId}`;
-      if (!playerStats || !playerStats[cacheKey]) {
-        fetchPlayerMatchStats(playerId, matchId);
-      }
-    },
-    [playerStats, fetchPlayerMatchStats]
+    [id],
   );
 
   // Calculate team statistics
@@ -318,9 +193,8 @@ const TeamPage: React.FC = () => {
 
     // Calculate total matches based on selected round
     const totalMatches = selectedRoundId
-      ? team.matches.filter(
-          (m) => m.round_id.toString() === selectedRoundId
-        ).length
+      ? team.matches.filter((m) => m.round_id.toString() === selectedRoundId)
+          .length
       : team.matches?.length || 0;
 
     // Calculate goals and assists for selected round
@@ -334,12 +208,12 @@ const TeamPage: React.FC = () => {
       } else {
         // Filter player stats for selected round
         const roundMatches = team.matches.filter(
-          (m) => m.round_id.toString() === selectedRoundId
+          (m) => m.round_id.toString() === selectedRoundId,
         );
 
         roundMatches.forEach((match) => {
           const matchStats = player.player_stats?.find(
-            (ps) => ps.match_id === match.id
+            (ps) => ps.match_id === match.id,
           );
           if (matchStats) {
             totalGoals += matchStats.goals || 0;
@@ -376,12 +250,12 @@ const TeamPage: React.FC = () => {
         } else {
           // Specific round
           const roundMatches = team.matches.filter(
-            (m) => m.round_id.toString() === selectedRoundId
+            (m) => m.round_id.toString() === selectedRoundId,
           );
 
           roundMatches.forEach((match) => {
             const matchStats = player.player_stats?.find(
-              (ps) => ps.match_id === match.id
+              (ps) => ps.match_id === match.id,
             );
             if (matchStats) {
               goals += matchStats.goals || 0;
@@ -405,7 +279,7 @@ const TeamPage: React.FC = () => {
   const filteredPlayers = useMemo(() => {
     if (!team?.players) return [];
     return team.players.filter((player) =>
-      player.name.toLowerCase().includes(searchQuery.toLowerCase())
+      player.name.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [team, searchQuery]);
 
@@ -425,6 +299,7 @@ const TeamPage: React.FC = () => {
         onCreate={handleCreatePlayer}
         context="team"
         currentPlayers={currentPlayers}
+        playersFromRound={playersFromRound}
         selectedRoundId={selectedRoundId}
         onRoundChange={setSelectedRoundId}
       />
@@ -548,13 +423,14 @@ const TeamPage: React.FC = () => {
                   <PlayerCard
                     key={player.id}
                     player={player}
-                    team={team}
+                    roundMatches={detailedRoundMatches}
+                    matchLoading={matchLoading}
+                    matchError={matchError}
                     selectedRoundId={selectedRoundId}
                     onClick={handlePlayerClick}
-                    onPlayerMatchSelect={handlePlayerMatchSelect}
-                    selectedPlayerId={selectedPlayerId}
-                    selectedMatchId={selectedMatchId}
+                    teamId={id!} // Pass teamId
                     playerStats={playerStats}
+                    updatePlayerStats={updatePlayerStats}
                   />
                 ))}
               </div>

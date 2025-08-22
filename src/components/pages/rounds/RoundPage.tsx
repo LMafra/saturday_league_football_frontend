@@ -26,7 +26,7 @@ const itemVariants = {
 };
 
 type ServiceType<T> = {
-  create: (data: T) => Promise<{ id: string; name: string }>;
+  create: (data: T) => Promise<{ id: number; name: string }>;
 };
 
 const Section = ({ title, icon, addLabel, onAdd, children }) => (
@@ -58,7 +58,7 @@ const useDebounce = (value, delay) => {
 };
 
 const RoundPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: number }>();
   const navigate = useNavigate();
   const [round, setRound] = useState<Round | null>(null);
   const [loading, setLoading] = useState(true);
@@ -158,21 +158,21 @@ const RoundPage: React.FC = () => {
   );
 
   const handleMatchCardClick = useCallback(
-    (matchId: string) => {
+    (matchId: number) => {
       navigate(`/matches/${matchId}`);
     },
     [navigate],
   );
 
   const handlePlayerCardClick = useCallback(
-    (playerId: string) => {
+    (playerId: number) => {
       navigate(`/players/${playerId}`);
     },
     [navigate],
   );
 
   const handleTeamCardClick = useCallback(
-    (teamId: string) => {
+    (teamId: number) => {
       navigate(`/teams/${teamId}`, {
         state: { roundId: id },
       });

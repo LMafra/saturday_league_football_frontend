@@ -57,7 +57,7 @@ const ChampionshipsPage: React.FC = () => {
     setOpen(false);
   };
 
-  const handleCardClick = (championshipId: string) => {
+  const handleCardClick = (championshipId: number) => {
     navigate(`/championships/${championshipId}`);
   };
 

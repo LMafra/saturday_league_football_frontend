@@ -12,7 +12,7 @@ interface FormInputProps {
   placeholder: string;
   required?: boolean;
   type?: "text" | "textarea" | "select";
-  options?: { id: string | number; name: string }[];
+  options?: { id: number | number; name: string }[];
   rows?: number;
 }
 

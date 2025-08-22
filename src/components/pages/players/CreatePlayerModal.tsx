@@ -1,19 +1,17 @@
-// CreatePlayerModal.tsx
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { BaseModal } from "../../modal/BaseModal";
 import { RoundFilterSection } from "../rounds/RoundFilterSection";
-import { PlayerSearchInput } from "./PlayerSearchInput";
-import { usePlayerModalLogic } from "../../../hooks/usePlayerModalLogic";
 import { Player, Round } from "../../../types";
 import playerService from "../../../services/playerService";
+import PlayerSearchInput from "./PlayerSearchInput";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (formData: {
     name: string;
-    player_rounds_attributes?: Array<{ round_id: string }>;
+    player_rounds_attributes?: Array<{ round_id: number }>;
     team_id?: string;
   }) => Promise<void>;
   championshipId?: string;
@@ -22,7 +20,7 @@ interface ModalProps {
   rounds?: Round[];
   playersFromRound?: Player[];
   selectedRoundId?: string | null;
-  onRoundChange?: (roundId: string) => void;
+  onRoundChange?: (roundId: number) => void;
 }
 
 const CreatePlayerModal: React.FC<ModalProps> = ({
@@ -37,36 +35,90 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
   selectedRoundId = null,
   onRoundChange = () => {},
 }) => {
-  const { id: routeId } = useParams<{ id: string }>();
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [showRoundFilter, setShowRoundFilter] = React.useState(false);
+  const { id: routeId } = useParams<{ id: number }>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showRoundFilter, setShowRoundFilter] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [existingPlayers, setExistingPlayers] = useState<Player[]>([]);
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoadingPlayers, setIsLoadingPlayers] = useState(false);
 
-  const {
-    searchTerm,
-    setSearchTerm,
-    existingPlayers,
-    filteredPlayers,
-    selectedPlayer,
-    setSelectedPlayer,
-    error,
-    setError,
-    handleSearchChange,
-    handleSelectPlayer,
-  } = usePlayerModalLogic(
-    isOpen,
-    championshipId,
-    currentPlayers,
-    context,
-    playersFromRound,
-  );
+  // Use ref to cache currentPlayers
+  const currentPlayersRef = useRef(currentPlayers);
+  currentPlayersRef.current = currentPlayers;
 
+  // Determine the target ID based on context
   const targetId = context === "team" ? routeId : selectedRoundId || routeId;
 
+  // Reset state when modal closes
   const handleClose = useCallback(() => {
     setSearchTerm("");
     setSelectedPlayer(null);
+    setError(null);
     onClose();
   }, [onClose]);
+
+  // Compute filtered players without useEffect
+  const filteredPlayers = React.useMemo(() => {
+    if (!isOpen) return [];
+
+    let availablePlayers: Player[] = [];
+
+    if (context === "team" && selectedRoundId && playersFromRound.length > 0) {
+      availablePlayers = [...playersFromRound];
+    } else if (championshipId) {
+      availablePlayers = [...existingPlayers];
+    }
+
+    return availablePlayers.filter((player) =>
+      player.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+  }, [
+    isOpen,
+    searchTerm,
+    context,
+    selectedRoundId,
+    playersFromRound,
+    championshipId,
+    existingPlayers,
+  ]);
+
+  // Fetch existing players only when modal opens
+  useEffect(() => {
+    if (!isOpen || !championshipId) return;
+
+    const fetchPlayers = async () => {
+      try {
+        setIsLoadingPlayers(true);
+        const players = await playerService.getAll(championshipId);
+
+        // Use ref instead of direct dependency
+        const availablePlayers = players.filter(
+          (player) =>
+            !currentPlayersRef.current.some((p) => p.id === player.id),
+        );
+
+        setExistingPlayers(availablePlayers);
+      } catch (err) {
+        setError("Failed to load players");
+      } finally {
+        setIsLoadingPlayers(false);
+      }
+    };
+
+    fetchPlayers();
+  }, [isOpen, championshipId]); // Removed currentPlayers dependency
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setSelectedPlayer(null);
+  };
+
+  const handleSelectPlayer = (player: Player) => {
+    setSelectedPlayer(player);
+    setSearchTerm(player.name);
+  };
 
   const handleSubmit = useCallback(async () => {
     setIsSubmitting(true);
@@ -82,7 +134,7 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
       } else {
         const createData: {
           name: string;
-          player_rounds_attributes?: Array<{ round_id: string }>;
+          player_rounds_attributes?: Array<{ round_id: number }>;
           team_id?: string;
         } = { name: searchTerm };
 
@@ -152,6 +204,7 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
             onSearchChange={handleSearchChange}
             onSelectPlayer={handleSelectPlayer}
             onSubmit={handleSubmit}
+            isLoading={isLoadingPlayers}
           />
 
           {error && (

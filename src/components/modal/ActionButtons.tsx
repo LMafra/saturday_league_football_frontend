@@ -1,4 +1,3 @@
-// ActionButtons.tsx
 import React from "react";
 import { Player } from "../../types";
 

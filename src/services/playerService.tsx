@@ -12,7 +12,7 @@ const api = axios.create({
 // Player API service
 const playerService = {
   // Fetch all player
-  getAll: async (championshipId?: string) => {
+  getAll: async (championshipId?: number) => {
     const params = championshipId
       ? { params: { championship_id: championshipId } }
       : {};
@@ -21,7 +21,7 @@ const playerService = {
   },
 
   // Fetch a single player by ID
-  getById: async (id: string) => {
+  getById: async (id: number) => {
     const response = await api.get(`/${id}`);
     return response.data;
   },
@@ -33,19 +33,19 @@ const playerService = {
   },
 
   // Update an existing player
-  update: async (id: string, data: unknown) => {
+  update: async (id: number, data: unknown) => {
     const response = await api.put(`/${id}`, data);
     return response.data;
   },
 
   // Delete a player
-  delete: async (id: string) => {
+  delete: async (id: number) => {
     const response = await api.delete(`/${id}`);
     return response.data;
   },
 
   // Add to round
-  addToRound: async (id: string, roundId: string) => {
+  addToRound: async (id: number, roundId: number) => {
     const response = await api.post(`/${id}/add_to_round`, {
       round_id: roundId,
     });
@@ -53,7 +53,7 @@ const playerService = {
   },
 
   // Add to team
-  addToTeam: async (id: string, teamId: string) => {
+  addToTeam: async (id: number, teamId: number) => {
     const response = await api.post(`/${id}/add_to_team`, {
       team_id: teamId,
     });
@@ -61,9 +61,18 @@ const playerService = {
   },
 
   // Match Stats
-  matchStats: async (id: string, matchId: string) => {
+  matchStats: async (
+    id: number,
+    matchId: number,
+    teamId: number,
+    roundId: number,
+  ) => {
     const response = await api.get(`/${id}/match_stats`, {
-      match_id: matchId,
+      params: {
+        match_id: matchId,
+        team_id: teamId,
+        round_id: roundId,
+      },
     });
     return response.data;
   },
