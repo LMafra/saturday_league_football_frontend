@@ -173,7 +173,7 @@ class PlayerCardComponentFactory {
         animate={{ opacity: 1, scale: 1 }}
         className="flex items-center gap-2"
       >
-        {React.createElement(icon, { className: `text-${color}-500` })}
+        {React.createElement(icon as React.ComponentType<any>, { className: `text-${color}-500` })}
         <span className="text-sm text-gray-600">{label}:</span>
         <span className="font-semibold text-gray-800">{value}</span>
       </motion.div>
@@ -217,7 +217,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   }, [roundMatches, player, selectedRoundId]);
 
   // ===== OBSERVER PATTERN IMPLEMENTATION =====
-  const statsObserver: StatsFetchingObserver = useCallback({
+  const statsObserver: StatsFetchingObserver = useMemo(() => ({
     onStatsFetchingChange: (playerId: number, matchId: number, isFetching: boolean) => {
       const cacheKey = `${playerId}-${matchId}`;
       setFetchingStats(prev => ({ ...prev, [cacheKey]: isFetching }));
@@ -226,7 +226,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
       const cacheKey = `${playerId}-${matchId}`;
       setLocalStats(prev => ({ ...prev, [cacheKey]: stats }));
     }
-  }, [setFetchingStats, setLocalStats]);
+  }), []);
 
   // Fetch player stats if not available
   const fetchPlayerStats = useCallback(

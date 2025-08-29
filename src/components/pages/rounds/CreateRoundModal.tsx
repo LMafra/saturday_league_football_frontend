@@ -5,14 +5,16 @@ import { useParams } from "react-router-dom";
 import { BaseModal } from "../../modal/BaseModal";
 import { FormInput } from "../../modal/FormInput";
 import { useModalForm } from "../../../hooks/useModalForm";
+interface FormData extends Record<string, unknown> {
+  name: string;
+  round_date: string;
+  championship_id: number;
+}
+
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (formData: {
-    name: string;
-    round_date: string;
-    championship_id: number;
-  }) => Promise<void>;
+  onCreate: (formData: FormData) => Promise<void>;
 }
 
 const CreateRoundModal: React.FC<ModalProps> = ({
@@ -20,36 +22,39 @@ const CreateRoundModal: React.FC<ModalProps> = ({
   onClose,
   onCreate,
 }) => {
-  const { id: championshipId } = useParams<{ id: number }>();
+  const { id: championshipId } = useParams<{ id: string }>();
   const {
     formData,
     setFormData,
     handleChange,
-    handleSubmit,
+
     error,
     isSubmitting,
     resetForm,
-  } = useModalForm({
+  } = useModalForm<FormData>({
     name: "",
     round_date: "",
-    championship_id: championshipId || "",
+    championship_id: Number(championshipId) || 0,
   });
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   useEffect(() => {
     if (championshipId) {
-      setFormData((prev) => ({ ...prev, championship_id: championshipId }));
+      setFormData({
+        ...formData,
+        championship_id: Number(championshipId)
+      });
     }
-  }, [championshipId, setFormData]);
+  }, [championshipId, setFormData, formData]);
 
   const handleDateChange = (date: Date | null) => {
     if (!date) return;
     setSelectedDate(date);
-    setFormData((prev) => ({
-      ...prev,
+    setFormData({
+      ...formData,
       round_date: date.toISOString(),
-    }));
+    });
   };
 
   const handleClose = () => {
@@ -66,7 +71,14 @@ const CreateRoundModal: React.FC<ModalProps> = ({
       formId="round-form"
       isSubmitting={isSubmitting}
     >
-      <form id="round-form" onSubmit={(e) => handleSubmit(onCreate, e)}>
+      <form id="round-form" onSubmit={(e) => {
+        e.preventDefault();
+        const dataWithNumberId = {
+          ...formData,
+          championship_id: Number(formData.championship_id)
+        };
+        onCreate(dataWithNumberId);
+      }}>
         <FormInput
           label="Nome da Rodada"
           name="name"

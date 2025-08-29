@@ -14,9 +14,9 @@ export function useTeam(teamId: number | null) {
     try {
       setLoading(true);
       const teamData = await teamService.getById(teamId);
-      setTeam(teamData);
+      setTeam(teamData as Team);
       const players = await Promise.all(
-        (teamData.players ?? []).map(async (player: Player) => {
+        ((teamData as Team).players ?? []).map(async (player: Player) => {
           try {
             return await playerService.getById(player.id);
           } catch {
@@ -24,7 +24,7 @@ export function useTeam(teamId: number | null) {
           }
         }),
       );
-      setPlayersFromTeam(players);
+      setPlayersFromTeam(players as Player[]);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");

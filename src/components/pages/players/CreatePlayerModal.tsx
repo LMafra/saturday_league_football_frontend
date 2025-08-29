@@ -95,7 +95,7 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
         const players = await playerService.getAll(Number(championshipId));
 
         // Use ref instead of direct dependency
-        const availablePlayers = players.filter(
+        const availablePlayers = (players as Player[]).filter(
           (player: Player) =>
             !currentPlayersRef.current.some((p) => p.id === player.id),
         );

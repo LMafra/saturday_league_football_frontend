@@ -14,7 +14,7 @@ import roundService from "../../../services/roundService";
 import matchService from "../../../services/matchService";
 import playerService from "../../../services/playerService";
 import teamService from "../../../services/teamService";
-import { Round } from "../../../types";
+import { Round, Match, Player, Team } from "../../../types";
 import CreateMatchModal from "../matches/CreateMatchModal";
 import CreatePlayerModal from "../players/CreatePlayerModal";
 import CreateTeamModal from "../teams/CreateTeamModal";
@@ -29,7 +29,15 @@ type ServiceType<T> = {
   create: (data: T) => Promise<{ id: number; name: string }>;
 };
 
-const Section = ({ title, icon, addLabel, onAdd, children }) => (
+interface SectionProps {
+  title: string;
+  icon: React.ReactNode;
+  addLabel: string;
+  onAdd: () => void;
+  children: React.ReactNode;
+}
+
+const Section = ({ title, icon, addLabel, onAdd, children }: SectionProps) => (
   <section className="bg-white rounded-2xl shadow-lg p-6">
     <div className="flex items-center justify-between mb-6">
       <h2 className="text-2xl font-semibold flex items-center gap-2">
@@ -48,7 +56,7 @@ const Section = ({ title, icon, addLabel, onAdd, children }) => (
   </section>
 );
 
-const useDebounce = (value, delay) => {
+const useDebounce = (value: string, delay: number) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedValue(value), delay);
@@ -58,7 +66,7 @@ const useDebounce = (value, delay) => {
 };
 
 const RoundPage: React.FC = () => {
-  const { id } = useParams<{ id: number }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [round, setRound] = useState<Round | null>(null);
   const [loading, setLoading] = useState(true);
@@ -95,7 +103,7 @@ const RoundPage: React.FC = () => {
   const fetchRoundData = useCallback(
     async (signal?: AbortSignal) => {
       try {
-        const roundData = await roundService.getById(id!, signal && { signal });
+        const roundData = await roundService.getById(Number(id!));
         if (!roundData.matches || !roundData.players)
           throw new Error("Invalid round data structure");
         setRound(roundData);
@@ -163,7 +171,7 @@ const RoundPage: React.FC = () => {
   );
 
   const handleCreatePlayer = useCreateHandler(
-    playerService,
+    playerService as ServiceType<{ name: string }>,
     "Jogador",
     fetchRoundData,
     () => setModals((prev) => ({ ...prev, player: false })),
@@ -172,7 +180,7 @@ const RoundPage: React.FC = () => {
   const handleCreateTeam = useCallback(
     async (formData: { name: string; round_id: number }) => {
       try {
-        const created = await teamService.create(formData);
+        const created = await teamService.create(formData) as { name: string };
         setMessage(`Time "${created.name}" criado com sucesso!`);
         setOpen(true);
         await fetchRoundData();
@@ -263,8 +271,8 @@ const RoundPage: React.FC = () => {
             isOpen={modals.match}
             onClose={() => setModals((prev) => ({ ...prev, match: false }))}
             onCreate={handleCreateMatch}
-            teams={round.teams}
-            roundId={id}
+            teams={round.teams || []}
+            roundId={Number(id!)}
           />
 
           <div className="space-y-4">
@@ -293,7 +301,7 @@ const RoundPage: React.FC = () => {
             isOpen={modals.player}
             onClose={() => setModals((prev) => ({ ...prev, player: false }))}
             onCreate={handleCreatePlayer}
-            championshipId={round?.championship_id}
+            championshipId={round?.championship_id?.toString()}
             currentPlayers={currentPlayers}
           />
 
@@ -326,7 +334,7 @@ const RoundPage: React.FC = () => {
             isOpen={modals.team}
             onClose={() => setModals((prev) => ({ ...prev, team: false }))}
             onCreate={handleCreateTeam}
-            roundId={id}
+            roundId={Number(id!)}
           />
 
           <SearchInput
@@ -367,7 +375,12 @@ const RoundPage: React.FC = () => {
   );
 };
 
-const MatchItem = React.memo(({ match, onClick }) => (
+interface MatchItemProps {
+  match: Match;
+  onClick: (matchId: number) => void;
+}
+
+const MatchItem = React.memo<MatchItemProps>(({ match, onClick }) => (
   <motion.div
     variants={itemVariants}
     onClick={() => onClick(match.id)}
@@ -390,7 +403,12 @@ const MatchItem = React.memo(({ match, onClick }) => (
   </motion.div>
 ));
 
-const PlayerItem = React.memo(({ player, onClick }) => (
+interface PlayerItemProps {
+  player: Player;
+  onClick: (playerId: number) => void;
+}
+
+const PlayerItem = React.memo<PlayerItemProps>(({ player, onClick }) => (
   <motion.div
     variants={itemVariants}
     onClick={() => onClick(player.id)}
@@ -412,7 +430,12 @@ const PlayerItem = React.memo(({ player, onClick }) => (
   </motion.div>
 ));
 
-const TeamItem = React.memo(({ team, onClick }) => (
+interface TeamItemProps {
+  team: Team;
+  onClick: (teamId: number) => void;
+}
+
+const TeamItem = React.memo<TeamItemProps>(({ team, onClick }) => (
   <motion.div
     variants={itemVariants}
     onClick={() => onClick(team.id)}
@@ -429,7 +452,13 @@ const TeamItem = React.memo(({ team, onClick }) => (
   </motion.div>
 ));
 
-const SearchInput = ({ value, onChange, placeholder }) => (
+interface SearchInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+}
+
+const SearchInput = ({ value, onChange, placeholder }: SearchInputProps) => (
   <div className="relative mb-4">
     <input
       type="text"
@@ -442,7 +471,11 @@ const SearchInput = ({ value, onChange, placeholder }) => (
   </div>
 );
 
-const EmptyState = ({ message }) => (
+interface EmptyStateProps {
+  message: string;
+}
+
+const EmptyState = ({ message }: EmptyStateProps) => (
   <div className="col-span-full text-center py-8 text-gray-500">{message}</div>
 );
 

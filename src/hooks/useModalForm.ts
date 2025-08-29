@@ -157,8 +157,8 @@ export const useModalForm = <T extends Record<string, unknown>>(
   const [state, setState] = useState<FormState<T>>(formHandlerRef.current.getState());
 
   // Observer implementation
-  const observer: FormStateObserver = useCallback((newState: FormState<T>) => {
-    setState(newState);
+  const observer: FormStateObserver<Record<string, unknown>> = useCallback((newState: FormState<Record<string, unknown>>) => {
+    setState(newState as FormState<T>);
   }, [setState]);
 
   // Add observer on mount

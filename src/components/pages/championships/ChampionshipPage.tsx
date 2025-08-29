@@ -10,7 +10,7 @@ import CreateRoundModal from "../rounds/CreateRoundModal";
 import { Championship } from "../../../types";
 
 const ChampionshipPage: React.FC = () => {
-  const { id } = useParams<{ id: number }>();
+  const { id } = useParams<{ id: string }>();
   const [championship, setChampionship] = useState<Championship | null>(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,7 +22,7 @@ const ChampionshipPage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const championshipData = await championshipService.getById(id!);
+        const championshipData = await championshipService.getById(Number(id!));
         setChampionship(championshipData);
       } catch (err) {
         if (err instanceof Error) {
@@ -48,7 +48,7 @@ const ChampionshipPage: React.FC = () => {
       setMessage(`Rodada "${createdRound.name}" criada com sucesso!`);
       setOpen(true);
 
-      const updatedChampionship = await championshipService.getById(id!);
+      const updatedChampionship = await championshipService.getById(Number(id!));
       setChampionship(updatedChampionship);
     } catch (err) {
       if (err instanceof Error) {

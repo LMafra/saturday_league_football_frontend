@@ -29,7 +29,7 @@ export interface HttpMethodStrategy {
 }
 
 export class GetStrategy implements HttpMethodStrategy {
-  async execute(api: AxiosInstance, url: string, data?: unknown, params?: unknown): Promise<AxiosResponse> {
+  async execute(api: AxiosInstance, url: string, _data?: unknown, params?: unknown): Promise<AxiosResponse> {
     return api.get(url, { params });
   }
 }
@@ -47,7 +47,7 @@ export class PutStrategy implements HttpMethodStrategy {
 }
 
 export class DeleteStrategy implements HttpMethodStrategy {
-  async execute(api: AxiosInstance, url: string, data?: unknown, params?: unknown): Promise<AxiosResponse> {
+  async execute(api: AxiosInstance, url: string, _data?: unknown, params?: unknown): Promise<AxiosResponse> {
     return api.delete(url, { params });
   }
 }

@@ -128,7 +128,7 @@ const PlayerPage: React.FC = () => {
 
       // Fetch additional round details
       const roundsWithDetails = await Promise.all(
-        playerData.rounds.map(async (round) => {
+        (playerData as any).rounds.map(async (round: any) => {
           try {
             const roundDetails = await roundService.getById(round.id);
             return roundDetails;
@@ -139,7 +139,7 @@ const PlayerPage: React.FC = () => {
       );
 
       setPlayer({
-        ...playerData,
+        ...(playerData as any),
         rounds: roundsWithDetails,
       });
       setError(null);
@@ -166,7 +166,7 @@ const PlayerPage: React.FC = () => {
   const playerStats = useMemo(() => {
     if (!player) return null;
 
-    return player.player_stats.reduce(
+    return (player.player_stats || []).reduce(
       (acc, stat) => ({
         totalGoals: acc.totalGoals + stat.goals,
         totalAssists: acc.totalAssists + stat.assists,
@@ -189,7 +189,7 @@ const PlayerPage: React.FC = () => {
   const chartData = useMemo(() => {
     if (!player) return [];
 
-    return player.player_stats.map((stat, index) => ({
+    return (player.player_stats || []).map((stat, index) => ({
       name: `Match ${index + 1}`,
       goals: stat.goals,
       assists: stat.assists,
@@ -325,17 +325,17 @@ const PlayerPage: React.FC = () => {
                   <YAxis />
                   <Tooltip />
                   <Bar dataKey="goals" name="Goals" fill="#10B981">
-                    {chartData.map((entry, index) => (
+                    {chartData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill="#10B981" />
                     ))}
                   </Bar>
                   <Bar dataKey="assists" name="Assists" fill="#3B82F6">
-                    {chartData.map((entry, index) => (
+                    {chartData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill="#3B82F6" />
                     ))}
                   </Bar>
                   <Bar dataKey="ownGoals" name="Own Goals" fill="#EF4444">
-                    {chartData.map((entry, index) => (
+                    {chartData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill="#EF4444" />
                     ))}
                   </Bar>
