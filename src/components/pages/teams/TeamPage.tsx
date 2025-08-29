@@ -8,8 +8,10 @@ import {
   FaFutbol,
   FaMedal,
   FaPlus,
+  FaHandshake,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
+import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
 import {
   BarChart,
   Bar,
@@ -19,70 +21,37 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import { Team, Player, Match } from "../../../types";
+import { Player } from "../../../types";
 import CreatePlayerModal from "../players/CreatePlayerModal";
 import PlayerCard from "../../card/PlayerCard";
 import StatCard from "../../card/StatCard";
 import SearchInput from "../../search/SearchInput";
-import teamService from "../../../services/teamService";
 import playerService from "../../../services/playerService";
 import roundService from "../../../services/roundService";
-import matchService from "../../../services/matchService";
+import { useTeam } from "../../../hooks/useTeam";
+import { useRoundMatches } from "../../../hooks/useRoundMatches";
+import { usePlayerStatsCache } from "../../../hooks/usePlayerStatsCache";
 
 const TeamPage: React.FC = () => {
   const location = useLocation();
-  const { id } = useParams<{ id: number }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [team, setTeam] = useState<Team | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const teamIdNum = id ? parseInt(id, 10) : null;
+  const { team, playersFromTeam, loading, error, setTeam, setPlayersFromTeam } = useTeam(teamIdNum);
   const [activeTab, setActiveTab] = useState<"players" | "performance">(
     "players",
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedRoundId, setSelectedRoundId] = useState<string | null>(
-    location.state?.roundId || null,
+  const [selectedRoundId, setSelectedRoundId] = useState<number | null>(
+    location.state?.roundId ?? null,
   );
-  const [playersFromTeam, setPlayersFromTeam] = useState<Player[]>([]);
   const [playersFromRound, setPlayersFromRound] = useState<Player[]>([]);
-  const [playerStats, setPlayerStats] = useState<Record<string, any> | null>(
-    null,
-  );
-  const [detailedRoundMatches, setDetailedRoundMatches] = useState<Match[]>([]);
-  const [matchLoading, setMatchLoading] = useState(false);
-  const [matchError, setMatchError] = useState<string | null>(null);
-
-  const fetchTeamData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const teamData = await teamService.getById(id!);
-      setTeam(teamData);
-
-      const players = await Promise.all(
-        teamData.players.map(async (player) => {
-          try {
-            return await playerService.getById(player.id.toString());
-          } catch {
-            return player;
-          }
-        }),
-      );
-
-      setPlayersFromTeam(players);
-      setError(null);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unexpected error occurred",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    fetchTeamData();
-  }, [fetchTeamData]);
+  const [isLoadingMatchStats, setIsLoadingMatchStats] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const { playerStats, updatePlayerStats } = usePlayerStatsCache();
+  const { detailedRoundMatches } = useRoundMatches(team?.matches);
 
   const fetchPlayersFromRound = useCallback(async () => {
     if (!selectedRoundId) return;
@@ -95,63 +64,71 @@ const TeamPage: React.FC = () => {
     }
   }, [selectedRoundId]);
 
+  // Fetch match stats for all players in the selected round
+  const fetchRoundMatchStats = useCallback(async () => {
+    if (!selectedRoundId || !teamIdNum || !playersFromTeam.length) return;
+
+    setIsLoadingMatchStats(true);
+
+    try {
+      const roundMatches = (team?.matches ?? []).filter(
+        (m) => m.round_id === selectedRoundId,
+      );
+
+      // Fetch match stats for each player in each match of the selected round
+      for (const player of playersFromTeam) {
+        for (const match of roundMatches) {
+          const cacheKey = `${player.id}-${match.id}`;
+
+          // Only fetch if not already in cache
+          if (!playerStats?.[cacheKey]) {
+            try {
+              const stats = await playerService.matchStats(
+                player.id,
+                match.id,
+                teamIdNum,
+                selectedRoundId,
+              );
+              updatePlayerStats(player.id, match.id, stats as {
+                goals_in_match: number;
+                own_goals_in_match: number;
+                assists_in_match: number;
+                total_matches_for_a_team: number;
+              });
+            } catch (err) {
+              console.error(`Failed to fetch match stats for player ${player.id} in match ${match.id}:`, err);
+            }
+          }
+        }
+      }
+    } finally {
+      setIsLoadingMatchStats(false);
+    }
+  }, [selectedRoundId, teamIdNum, playersFromTeam, team?.matches, playerStats, updatePlayerStats]);
+
   useEffect(() => {
     if (selectedRoundId) {
       fetchPlayersFromRound();
+      fetchRoundMatchStats();
     }
-  }, [selectedRoundId, fetchPlayersFromRound]);
+  }, [selectedRoundId, fetchPlayersFromRound, fetchRoundMatchStats]);
 
-  const fetchDetailedMatches = useCallback(async () => {
-    if (!selectedRoundId || !team?.matches) {
-      setDetailedRoundMatches([]);
-      return;
-    }
+  // Round matches are managed by useRoundMatches
 
-    setMatchLoading(true);
-    setMatchError(null);
-
-    try {
-      // Filter matches for the round
-      const roundMatchIds = team.matches
-        .filter((match) => match.round_id.toString() === selectedRoundId)
-        .map((match) => match.id.toString());
-
-      // Fetch detailed match data for each match
-      const detailedMatches = await Promise.all(
-        roundMatchIds.map((id) => matchService.getById(id)),
-      );
-
-      setDetailedRoundMatches(detailedMatches);
-    } catch (err) {
-      setMatchError("Failed to load match details");
-      console.error("Error fetching match details:", err);
-    } finally {
-      setMatchLoading(false);
-    }
-  }, [selectedRoundId, team]);
-
-  useEffect(() => {
-    if (selectedRoundId) {
-      fetchDetailedMatches();
-    } else {
-      setDetailedRoundMatches([]);
-    }
-  }, [selectedRoundId, fetchDetailedMatches]);
-
-  const updatePlayerStats = useCallback(
-    (playerId: number, matchId: number, stats: PlayerMatchStats) => {
-      setPlayerStats((prev) => ({
-        ...prev,
-        [`${playerId}-${matchId}`]: stats,
-      }));
-    },
-    [],
-  );
+  // Provided by usePlayerStatsCache
 
   const handleBackClick = useCallback(() => navigate(-1), [navigate]);
   const handlePlayerClick = useCallback(
     (playerId: number) => navigate(`/players/${playerId}`),
     [navigate],
+  );
+
+  const handleClose = useCallback(
+    (_event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
+      if (reason === "clickaway") return;
+      setOpen(false);
+    },
+    [],
   );
 
   const handleCreatePlayer = useCallback(
@@ -164,61 +141,91 @@ const TeamPage: React.FC = () => {
           team_id: parseInt(id),
         });
 
+        // Create a complete player object with default values
+        const completePlayer: Player = {
+          ...(newPlayer as Player),
+          rounds: [],
+          player_stats: [],
+          total_goals: 0,
+          total_assists: 0,
+          total_own_goals: 0,
+        };
+
+        // Update both team and playersFromTeam states
         setTeam((prev) => {
           if (!prev) return prev;
           return {
             ...prev,
             players: [
-              ...prev.players,
-              {
-                ...newPlayer,
-                rounds: [],
-                player_stats: [],
-              },
+              ...((prev.players ?? []) as Player[]),
+              completePlayer,
             ],
           };
         });
 
-        return newPlayer;
+        // Also update the playersFromTeam state directly
+        setPlayersFromTeam((prev) => [...prev, completePlayer]);
+
+        // Show success message
+        setMessage(`Jogador "${completePlayer.name}" criado com sucesso!`);
+        setOpen(true);
       } catch (err) {
         throw err instanceof Error ? err : new Error("Failed to create player");
       }
     },
-    [id],
+    [id, setTeam, setPlayersFromTeam],
   );
 
-  // Calculate team statistics
+  // Calculate team statistics using match stats from playerService
   const teamStats = useMemo(() => {
     if (!playersFromTeam.length || !team) return null;
 
     // Calculate total matches based on selected round
+    const matches = team.matches ?? [];
     const totalMatches = selectedRoundId
-      ? team.matches.filter((m) => m.round_id.toString() === selectedRoundId)
-          .length
-      : team.matches?.length || 0;
+      ? matches.filter((m) => m.round_id === selectedRoundId).length
+      : matches.length;
 
-    // Calculate goals and assists for selected round
+    // Calculate goals and assists for selected round using playerStats cache
     let totalGoals = 0;
     let totalAssists = 0;
+    let totalOwnGoals = 0;
 
     playersFromTeam.forEach((player) => {
       if (!selectedRoundId) {
-        totalGoals += player.total_goals || 0;
-        totalAssists += player.total_assists || 0;
+        // For all rounds, use cached stats or fallback to player totals
+        const playerMatchStats = Object.entries(playerStats || {}).filter(
+          ([key]) => key.startsWith(`${player.id}-`)
+        ).map(([, stats]) => stats);
+
+        if (playerMatchStats.length > 0) {
+          playerMatchStats.forEach((stats) => {
+            totalGoals += stats.goals_in_match || 0;
+            totalAssists += stats.assists_in_match || 0;
+            totalOwnGoals += stats.own_goals_in_match || 0;
+          });
+        } else {
+          // Fallback to player totals if no match stats available
+          totalGoals += player.total_goals || 0;
+          totalAssists += player.total_assists || 0;
+          totalOwnGoals += player.total_own_goals || 0;
+        }
       } else {
-        // Filter player stats for selected round
-        const roundMatches = team.matches.filter(
-          (m) => m.round_id.toString() === selectedRoundId,
+        // For specific round, use cached stats for that round's matches
+        const roundMatches = (team.matches ?? []).filter(
+          (m) => m.round_id === selectedRoundId,
         );
 
         roundMatches.forEach((match) => {
-          const matchStats = player.player_stats?.find(
-            (ps) => ps.match_id === match.id,
-          );
+          const cacheKey = `${player.id}-${match.id}`;
+          const matchStats = playerStats?.[cacheKey];
+
           if (matchStats) {
-            totalGoals += matchStats.goals || 0;
-            totalAssists += matchStats.assists || 0;
+            totalGoals += matchStats.goals_in_match || 0;
+            totalAssists += matchStats.assists_in_match || 0;
+            totalOwnGoals += matchStats.own_goals_in_match || 0;
           }
+          // Note: We don't fallback to player.player_stats here since we want to use matchStats from playerService
         });
       }
     });
@@ -227,12 +234,14 @@ const TeamPage: React.FC = () => {
       totalPlayers: playersFromTeam.length,
       totalGoals,
       totalAssists,
+      totalOwnGoals,
       totalMatches,
       avgGoalsPerPlayer: (totalGoals / playersFromTeam.length).toFixed(1),
     };
-  }, [playersFromTeam, team, selectedRoundId]);
+  }, [playersFromTeam, team, selectedRoundId, playerStats]);
 
-  // Prepare data for charts
+
+  // Prepare data for charts using match stats from playerService
   const chartData = useMemo(() => {
     if (!playersFromTeam.length || !team) return [];
 
@@ -243,25 +252,39 @@ const TeamPage: React.FC = () => {
         let rounds = 0;
 
         if (!selectedRoundId) {
-          // All rounds
-          goals = player.total_goals || 0;
-          assists = player.total_assists || 0;
-          rounds = player.rounds?.length || 0;
+          // All rounds - use cached match stats or fallback to player totals
+          const playerMatchStats = Object.entries(playerStats || {}).filter(
+            ([key]) => key.startsWith(`${player.id}-`)
+          ).map(([, stats]) => stats);
+
+          if (playerMatchStats.length > 0) {
+            playerMatchStats.forEach((stats) => {
+              goals += stats.goals_in_match || 0;
+              assists += stats.assists_in_match || 0;
+            });
+            rounds = playerMatchStats.length;
+          } else {
+            // Fallback to player totals
+            goals = player.total_goals || 0;
+            assists = player.total_assists || 0;
+            rounds = player.rounds?.length || 0;
+          }
         } else {
-          // Specific round
-          const roundMatches = team.matches.filter(
-            (m) => m.round_id.toString() === selectedRoundId,
+          // Specific round - use cached stats for that round's matches
+          const roundMatches = (team.matches ?? []).filter(
+            (m) => m.round_id === selectedRoundId,
           );
 
           roundMatches.forEach((match) => {
-            const matchStats = player.player_stats?.find(
-              (ps) => ps.match_id === match.id,
-            );
+            const cacheKey = `${player.id}-${match.id}`;
+            const matchStats = playerStats?.[cacheKey];
+
             if (matchStats) {
-              goals += matchStats.goals || 0;
-              assists += matchStats.assists || 0;
+              goals += matchStats.goals_in_match || 0;
+              assists += matchStats.assists_in_match || 0;
               rounds++;
             }
+            // Note: We don't fallback to player.player_stats here since we want to use matchStats from playerService
           });
         }
 
@@ -273,15 +296,15 @@ const TeamPage: React.FC = () => {
         };
       })
       .sort((a, b) => b.goals - a.goals);
-  }, [playersFromTeam, team, selectedRoundId]);
+  }, [playersFromTeam, team, selectedRoundId, playerStats]);
 
   // Filter players based on search query
   const filteredPlayers = useMemo(() => {
-    if (!team?.players) return [];
-    return team.players.filter((player) =>
+    if (!playersFromTeam.length) return [];
+    return playersFromTeam.filter((player) =>
       player.name.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-  }, [team, searchQuery]);
+  }, [playersFromTeam, searchQuery]);
 
   const currentPlayers = useMemo(() => team?.players || [], [team?.players]);
 
@@ -330,6 +353,11 @@ const TeamPage: React.FC = () => {
                 </h1>
                 <p className="text-gray-600">
                   Criado em: {format(new Date(team.created_at), "dd MMMM yyyy")}
+                  {selectedRoundId && isLoadingMatchStats && (
+                    <span className="ml-2 text-blue-600 text-sm">
+                      • Carregando estatísticas da rodada...
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
@@ -341,7 +369,7 @@ const TeamPage: React.FC = () => {
       </motion.div>
 
       {/* Stats Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <StatCard
           title="Total Jogadores"
           value={teamStats?.totalPlayers || 0}
@@ -356,13 +384,19 @@ const TeamPage: React.FC = () => {
         />
         <StatCard
           title="Total Gols"
-          value={teamStats?.totalGoals || 0}
+          value={isLoadingMatchStats ? "..." : (teamStats?.totalGoals || 0)}
           icon={<FaMedal className="text-yellow-500" />}
           color="border-yellow-500"
         />
         <StatCard
+          title="Total Assistências"
+          value={isLoadingMatchStats ? "..." : (teamStats?.totalAssists || 0)}
+          icon={<FaHandshake className="text-indigo-500" />}
+          color="border-indigo-500"
+        />
+        <StatCard
           title="Média Gols/Jogador"
-          value={teamStats?.avgGoalsPerPlayer || "0.0"}
+          value={isLoadingMatchStats ? "..." : (teamStats?.avgGoalsPerPlayer || "0.0")}
           icon={<FaChartLine className="text-purple-500" />}
           color="border-purple-500"
         />
@@ -424,11 +458,11 @@ const TeamPage: React.FC = () => {
                     key={player.id}
                     player={player}
                     roundMatches={detailedRoundMatches}
-                    matchLoading={matchLoading}
-                    matchError={matchError}
+                                    matchLoading={false}
+                matchError={null}
                     selectedRoundId={selectedRoundId}
                     onClick={handlePlayerClick}
-                    teamId={id!} // Pass teamId
+                    teamId={id ? parseInt(id, 10) : 0}
                     playerStats={playerStats}
                     updatePlayerStats={updatePlayerStats}
                   />
@@ -463,7 +497,7 @@ const TeamPage: React.FC = () => {
                     <YAxis />
                     <Tooltip />
                     <Bar dataKey="goals" name="Gols">
-                      {chartData.map((entry, index) => (
+                      {chartData.map((_, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={index % 2 === 0 ? "#3B82F6" : "#10B981"}
@@ -486,7 +520,7 @@ const TeamPage: React.FC = () => {
                     <YAxis />
                     <Tooltip />
                     <Bar dataKey="rounds" name="Rodadas">
-                      {chartData.map((entry, index) => (
+                      {chartData.map((_, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={index % 2 === 0 ? "#F59E0B" : "#EF4444"}
@@ -500,6 +534,20 @@ const TeamPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      <Snackbar
+        open={open}
+        autoHideDuration={6000}
+        onClose={handleClose}
+        message={message}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        sx={{
+          "& .MuiSnackbarContent-root": {
+            backgroundColor: "#2563eb",
+            color: "#fff",
+          },
+        }}
+      />
     </div>
   );
 };

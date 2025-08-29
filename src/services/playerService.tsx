@@ -1,81 +1,77 @@
-import axios from "axios";
+import { BaseService } from "./baseService";
 
-// Base URL for the API
-const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
+// ===== CONCRETE SERVICE IMPLEMENTATION =====
+// Player service with specific operations
+class PlayerService extends BaseService {
+  constructor() {
+    super('/players');
+  }
 
-// Axios instance
-const api = axios.create({
-  baseURL: `${VITE_BASE_URL}/api/v1/players`,
-  timeout: 5000, // 5 seconds timeout
-});
+  // ===== CRUD Operations =====
+  async getAll(championshipId?: number): Promise<unknown> {
+    const params = championshipId ? { championship_id: championshipId } : {};
+    return super.getAll(params);
+  }
 
-// Player API service
-const playerService = {
-  // Fetch all player
-  getAll: async (championshipId?: number) => {
-    const params = championshipId
-      ? { params: { championship_id: championshipId } }
-      : {};
-    const response = await api.get("/", params);
-    return response.data;
-  },
+  async getById(id: number): Promise<unknown> {
+    return super.getById(id);
+  }
 
-  // Fetch a single player by ID
-  getById: async (id: number) => {
-    const response = await api.get(`/${id}`);
-    return response.data;
-  },
+  async create(data: unknown): Promise<unknown> {
+    return super.create(data);
+  }
 
-  // Create a new player
-  create: async (data: unknown) => {
-    const response = await api.post("/", data);
-    return response.data;
-  },
+  async update(id: number, data: unknown): Promise<unknown> {
+    return super.update(id, data);
+  }
 
-  // Update an existing player
-  update: async (id: number, data: unknown) => {
-    const response = await api.put(`/${id}`, data);
-    return response.data;
-  },
+  async delete(id: number): Promise<unknown> {
+    return super.delete(id);
+  }
 
-  // Delete a player
-  delete: async (id: number) => {
-    const response = await api.delete(`/${id}`);
-    return response.data;
-  },
+  // ===== Business Logic Operations =====
+  async addToRound(id: number, roundId: number): Promise<unknown> {
+    try {
+      const response = await this.executeRequest('POST', `/${id}/add_to_round`, {
+        round_id: roundId,
+      });
+      return this.handleResponse(response);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
 
-  // Add to round
-  addToRound: async (id: number, roundId: number) => {
-    const response = await api.post(`/${id}/add_to_round`, {
-      round_id: roundId,
-    });
-    return response.data;
-  },
+  async addToTeam(id: number, teamId: number): Promise<unknown> {
+    try {
+      const response = await this.executeRequest('POST', `/${id}/add_to_team`, {
+        team_id: teamId,
+      });
+      return this.handleResponse(response);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
 
-  // Add to team
-  addToTeam: async (id: number, teamId: number) => {
-    const response = await api.post(`/${id}/add_to_team`, {
-      team_id: teamId,
-    });
-    return response.data;
-  },
-
-  // Match Stats
-  matchStats: async (
+  async matchStats(
     id: number,
     matchId: number,
     teamId: number,
     roundId: number,
-  ) => {
-    const response = await api.get(`/${id}/match_stats`, {
-      params: {
+  ): Promise<unknown> {
+    try {
+      const response = await this.executeRequest('GET', `/${id}/match_stats`, undefined, {
         match_id: matchId,
         team_id: teamId,
         round_id: roundId,
-      },
-    });
-    return response.data;
-  },
-};
+      });
+      return this.handleResponse(response);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+}
 
+// ===== SINGLETON PATTERN =====
+// Export singleton instance
+const playerService = new PlayerService();
 export default playerService;

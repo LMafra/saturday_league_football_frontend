@@ -19,7 +19,7 @@ interface ModalProps {
   context?: "round" | "team";
   rounds?: Round[];
   playersFromRound?: Player[];
-  selectedRoundId?: string | null;
+  selectedRoundId?: number | null;
   onRoundChange?: (roundId: number) => void;
 }
 
@@ -35,7 +35,8 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
   selectedRoundId = null,
   onRoundChange = () => {},
 }) => {
-  const { id: routeId } = useParams<{ id: number }>();
+  const { id: routeIdParam } = useParams<{ id: string }>();
+  const routeId = routeIdParam ? Number(routeIdParam) : undefined;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showRoundFilter, setShowRoundFilter] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -91,16 +92,16 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
     const fetchPlayers = async () => {
       try {
         setIsLoadingPlayers(true);
-        const players = await playerService.getAll(championshipId);
+        const players = await playerService.getAll(Number(championshipId));
 
         // Use ref instead of direct dependency
         const availablePlayers = players.filter(
-          (player) =>
+          (player: Player) =>
             !currentPlayersRef.current.some((p) => p.id === player.id),
         );
 
         setExistingPlayers(availablePlayers);
-      } catch (err) {
+      } catch {
         setError("Failed to load players");
       } finally {
         setIsLoadingPlayers(false);
@@ -143,7 +144,7 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
             ? [{ round_id: targetId }]
             : [];
         } else if (context === "team") {
-          createData.team_id = targetId;
+          createData.team_id = String(targetId);
         }
 
         await onCreate(createData);

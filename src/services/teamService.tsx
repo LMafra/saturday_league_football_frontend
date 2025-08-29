@@ -1,45 +1,35 @@
-import axios from "axios";
+import { BaseService } from "./baseService";
 
-// Base URL for the API
-const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
+// ===== CONCRETE SERVICE IMPLEMENTATION =====
+// Team service with specific operations
+class TeamService extends BaseService {
+  constructor() {
+    super('/teams');
+  }
 
-// Axios instance
-const api = axios.create({
-  baseURL: `${VITE_BASE_URL}/api/v1/teams`,
-  timeout: 5000, // 5 seconds timeout
-});
+  // ===== CRUD Operations =====
+  async getAll(): Promise<unknown> {
+    return super.getAll();
+  }
 
-// Team API service
-const teamService = {
-  // Fetch all team
-  getAll: async () => {
-    const response = await api.get("/");
-    return response.data;
-  },
+  async getById(id: number): Promise<unknown> {
+    return super.getById(id);
+  }
 
-  // Fetch a single team by ID
-  getById: async (id: number) => {
-    const response = await api.get(`/${id}`);
-    return response.data;
-  },
+  async create(data: unknown): Promise<unknown> {
+    return super.create(data);
+  }
 
-  // Create a new team
-  create: async (data: unknown) => {
-    const response = await api.post("/", data);
-    return response.data;
-  },
+  async update(id: number, data: unknown): Promise<unknown> {
+    return super.update(id, data);
+  }
 
-  // Update an existing team
-  update: async (id: number, data: unknown) => {
-    const response = await api.put(`/${id}`, data);
-    return response.data;
-  },
+  async delete(id: number): Promise<unknown> {
+    return super.delete(id);
+  }
+}
 
-  // Delete a team
-  delete: async (id: number) => {
-    const response = await api.delete(`/${id}`);
-    return response.data;
-  },
-};
-
+// ===== SINGLETON PATTERN =====
+// Export singleton instance
+const teamService = new TeamService();
 export default teamService;

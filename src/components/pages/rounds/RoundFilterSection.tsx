@@ -7,7 +7,7 @@ interface RoundFilterSectionProps {
   context: "round" | "team";
   rounds: Round[];
   showRoundFilter: boolean;
-  selectedRoundid: number | null;
+  selectedRoundId: number | null;
   onToggleFilter: () => void;
   onRoundChange: (roundId: number) => void;
   existingPlayers: Player[];
@@ -39,8 +39,8 @@ export const RoundFilterSection: React.FC<RoundFilterSectionProps> = ({
       {showRoundFilter && (
         <div className="mb-4">
           <select
-            value={selectedRoundId || ""}
-            onChange={(e) => onRoundChange(e.target.value)}
+            value={selectedRoundId ?? ""}
+            onChange={(e) => onRoundChange(Number(e.target.value))}
             className="w-full p-2 border rounded-lg text-sm"
           >
             {rounds.map((round) => (

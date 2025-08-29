@@ -20,7 +20,6 @@ const CreateTeamModal: React.FC<ModalProps> = ({
     formData,
     setFormData,
     handleChange,
-    handleSubmit,
     error,
     isSubmitting,
     resetForm,
@@ -30,8 +29,8 @@ const CreateTeamModal: React.FC<ModalProps> = ({
   });
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, round_id: roundId }));
-  }, [roundId, setFormData]);
+    setFormData({ name: formData.name, round_id: roundId });
+  }, [roundId, setFormData, formData.name]);
 
   const handleClose = () => {
     resetForm();
@@ -39,6 +38,13 @@ const CreateTeamModal: React.FC<ModalProps> = ({
   };
 
   const submitDisabled = !formData.name;
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Ensure round_id is always included in the form data
+    const dataToSubmit = { ...formData, round_id: roundId };
+    await onCreate(dataToSubmit);
+  };
 
   return (
     <BaseModal
@@ -50,7 +56,7 @@ const CreateTeamModal: React.FC<ModalProps> = ({
       submitDisabled={submitDisabled}
       submitLabel="Criar Time"
     >
-      <form id="team-form" onSubmit={(e) => handleSubmit(onCreate, e)}>
+      <form id="team-form" onSubmit={handleFormSubmit}>
         <FormInput
           label="Nome do Time"
           name="name"

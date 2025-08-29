@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { useParams } from "react-router-dom";
 import { BaseModal } from "../../modal/BaseModal";
 import { FormInput } from "../../modal/FormInput";
 import { useModalForm } from "../../../hooks/useModalForm";
@@ -15,6 +14,7 @@ interface ModalProps {
     date: string;
   }) => Promise<void>;
   teams: { id: number; name: string }[];
+  roundId: number;
 }
 
 const CreateMatchModal: React.FC<ModalProps> = ({
@@ -22,13 +22,12 @@ const CreateMatchModal: React.FC<ModalProps> = ({
   onClose,
   onCreate,
   teams,
+  roundId,
 }) => {
-  const { id: roundId } = useParams<{ id: number }>();
   const {
     formData,
     setFormData,
     handleChange,
-    handleSubmit,
     error,
     isSubmitting,
     resetForm,
@@ -36,15 +35,19 @@ const CreateMatchModal: React.FC<ModalProps> = ({
     name: "",
     team_1_id: "",
     team_2_id: "",
-    round_id: roundId || "",
+    round_id: roundId,
     date: "",
   });
 
   useEffect(() => {
-    if (roundId) {
-      setFormData((prev) => ({ ...prev, round_id: roundId }));
-    }
-  }, [roundId, setFormData]);
+    setFormData({
+      name: formData.name,
+      team_1_id: formData.team_1_id,
+      team_2_id: formData.team_2_id,
+      round_id: roundId,
+      date: formData.date
+    });
+  }, [roundId, setFormData, formData.name, formData.team_1_id, formData.team_2_id, formData.date]);
 
   const handleClose = () => {
     resetForm();
@@ -52,6 +55,18 @@ const CreateMatchModal: React.FC<ModalProps> = ({
   };
 
   const submitDisabled = !formData.team_1_id || !formData.team_2_id;
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Ensure round_id is always included in the form data and convert string IDs to numbers
+    const dataToSubmit = {
+      ...formData,
+      round_id: roundId,
+      team_1_id: Number(formData.team_1_id),
+      team_2_id: Number(formData.team_2_id)
+    };
+    await onCreate(dataToSubmit);
+  };
 
   return (
     <BaseModal
@@ -63,7 +78,7 @@ const CreateMatchModal: React.FC<ModalProps> = ({
       submitDisabled={submitDisabled}
       submitLabel="Criar Partida"
     >
-      <form id="match-form" onSubmit={(e) => handleSubmit(onCreate, e)}>
+      <form id="match-form" onSubmit={handleFormSubmit}>
         <FormInput
           label="Nome da Partida"
           name="name"

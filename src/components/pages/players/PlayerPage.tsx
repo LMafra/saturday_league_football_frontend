@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { FaArrowLeft, FaFutbol, FaMedal } from "react-icons/fa";
 import { motion } from "framer-motion";
 import playerService from "../../../services/playerService";
-import { Player, PlayerStat } from "../../../types";
+import { Player, PlayerStat, Round } from "../../../types";
 import roundService from "../../../services/roundService";
 import {
   BarChart,
@@ -50,7 +50,7 @@ const RoundCard = ({
   round,
   onClick,
 }: {
-  round: any;
+  round: Round;
   onClick: (id: number) => void;
 }) => (
   <motion.div
@@ -112,7 +112,7 @@ const MatchStatCard = ({ stat }: { stat: PlayerStat }) => (
 );
 
 const PlayerPage: React.FC = () => {
-  const { id } = useParams<{ id: number }>();
+  const { id } = useParams<{ id: string }>();
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -124,15 +124,13 @@ const PlayerPage: React.FC = () => {
   const fetchPlayerData = useCallback(async () => {
     try {
       setLoading(true);
-      const playerData = await playerService.getById(id!);
+      const playerData = await playerService.getById(Number(id));
 
       // Fetch additional round details
       const roundsWithDetails = await Promise.all(
         playerData.rounds.map(async (round) => {
           try {
-            const roundDetails = await roundService.getById(
-              round.id.toString(),
-            );
+            const roundDetails = await roundService.getById(round.id);
             return roundDetails;
           } catch {
             return round; // Fallback to basic data if fetch fails

@@ -123,6 +123,7 @@ const RoundPage: React.FC = () => {
     service: ServiceType<T>,
     successMessage: string,
     fetchRoundData: () => Promise<void>,
+    closeModal: () => void,
   ) => {
     return useCallback(
       async (formData: T) => {
@@ -131,30 +132,56 @@ const RoundPage: React.FC = () => {
           setMessage(`${successMessage} "${created.name}" criado com sucesso!`);
           setOpen(true);
           await fetchRoundData();
+          closeModal(); // Close the modal after successful creation
         } catch (err) {
           setError(err instanceof Error ? err.message : "Erro desconhecido");
         }
       },
-      [service, successMessage, fetchRoundData],
+      [service, successMessage, fetchRoundData, closeModal],
     );
   };
 
-  const handleCreateMatch = useCreateHandler(
-    matchService,
-    "Partida",
-    fetchRoundData,
+  const handleCreateMatch = useCallback(
+    async (formData: {
+      name: string;
+      team_1_id: number;
+      team_2_id: number;
+      round_id: number;
+      date: string;
+    }) => {
+      try {
+        const created = await matchService.create(formData);
+        setMessage(`Partida "${created.name}" criada com sucesso!`);
+        setOpen(true);
+        await fetchRoundData();
+        setModals((prev) => ({ ...prev, match: false }));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Erro desconhecido");
+      }
+    },
+    [fetchRoundData],
   );
 
   const handleCreatePlayer = useCreateHandler(
     playerService,
     "Jogador",
     fetchRoundData,
+    () => setModals((prev) => ({ ...prev, player: false })),
   );
 
-  const handleCreateTeam = useCreateHandler(
-    teamService,
-    "Time",
-    fetchRoundData,
+  const handleCreateTeam = useCallback(
+    async (formData: { name: string; round_id: number }) => {
+      try {
+        const created = await teamService.create(formData);
+        setMessage(`Time "${created.name}" criado com sucesso!`);
+        setOpen(true);
+        await fetchRoundData();
+        setModals((prev) => ({ ...prev, team: false }));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Erro desconhecido");
+      }
+    },
+    [fetchRoundData],
   );
 
   const handleMatchCardClick = useCallback(
@@ -237,6 +264,7 @@ const RoundPage: React.FC = () => {
             onClose={() => setModals((prev) => ({ ...prev, match: false }))}
             onCreate={handleCreateMatch}
             teams={round.teams}
+            roundId={id}
           />
 
           <div className="space-y-4">
@@ -350,11 +378,6 @@ const MatchItem = React.memo(({ match, onClick }) => (
         {format(new Date(match.created_at), "dd/MM/yyyy")}
       </span>
       <span className="text-sm text-gray-500">{match.name}</span>
-      <span
-        className={`px-2 py-1 rounded-full text-sm ${match.winning_team ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}
-      >
-        {match.winning_team ? "Finalizado" : "Agendado"}
-      </span>
     </div>
     <div className="grid grid-cols-3 items-center text-center gap-4">
       <p className="font-medium text-right">{match.team_1.name}</p>
