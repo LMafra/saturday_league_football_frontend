@@ -18,7 +18,7 @@ const roundService = {
   },
 
   // Fetch a single round by ID
-  getById: async (id: string) => {
+  getById: async (id: number) => {
     const response = await api.get(`/${id}`);
     return response.data;
   },
@@ -30,13 +30,13 @@ const roundService = {
   },
 
   // Update an existing round
-  update: async (id: string, data: unknown) => {
+  update: async (id: number, data: unknown) => {
     const response = await api.put(`/${id}`, data);
     return response.data;
   },
 
   // Delete a round
-  delete: async (id: string) => {
+  delete: async (id: number) => {
     const response = await api.delete(`/${id}`);
     return response.data;
   },
