@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { BaseModal } from "../../modal/BaseModal";
 import { RoundFilterSection } from "../rounds/RoundFilterSection";
-import { Player, Round } from "../../../types";
+import { Player, Round, Team } from "../../../types";
 import playerService from "../../../services/playerService";
 import PlayerSearchInput from "./PlayerSearchInput";
 
@@ -21,6 +21,7 @@ interface ModalProps {
   playersFromRound?: Player[];
   selectedRoundId?: number | null;
   onRoundChange?: (roundId: number) => void;
+  onSuccess?: (payload?: Round | Team) => void;
 }
 
 const CreatePlayerModal: React.FC<ModalProps> = ({
@@ -34,6 +35,7 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
   playersFromRound = [],
   selectedRoundId = null,
   onRoundChange = () => {},
+  onSuccess,
 }) => {
   const { id: routeIdParam } = useParams<{ id: string }>();
   const routeId = routeIdParam ? Number(routeIdParam) : undefined;
@@ -127,10 +129,16 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
 
     try {
       if (selectedPlayer) {
+        let response: Round | Team | undefined;
         if (context === "round") {
-          await playerService.addToRound(selectedPlayer.id, targetId!);
+          if (!targetId) throw new Error("Rodada inválida para adicionar jogador.");
+          response = await playerService.addToRound(selectedPlayer.id, targetId);
         } else if (context === "team") {
-          await playerService.addToTeam(selectedPlayer.id, targetId!);
+          if (!targetId) throw new Error("Time inválido para adicionar jogador.");
+          response = await playerService.addToTeam(selectedPlayer.id, targetId);
+        }
+        if (response) {
+          onSuccess?.(response);
         }
       } else {
         const createData: {
@@ -148,6 +156,7 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
         }
 
         await onCreate(createData);
+        onSuccess?.();
       }
       handleClose();
     } catch (err) {
@@ -155,7 +164,7 @@ const CreatePlayerModal: React.FC<ModalProps> = ({
     } finally {
       setIsSubmitting(false);
     }
-  }, [selectedPlayer, searchTerm, context, targetId, onCreate, handleClose]);
+  }, [selectedPlayer, searchTerm, context, targetId, onCreate, onSuccess, handleClose]);
 
   const title = selectedPlayer
     ? `Add Player to ${context === "team" ? "Team" : "Round"}`

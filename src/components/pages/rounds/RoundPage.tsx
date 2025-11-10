@@ -177,6 +177,17 @@ const RoundPage: React.FC = () => {
     () => setModals((prev) => ({ ...prev, player: false })),
   );
 
+  const handlePlayerModalSuccess = useCallback(
+    (payload?: Round | Team) => {
+      if (!payload) return;
+      if (!("championship_id" in payload)) return;
+      setRound(payload);
+      setMessage("Jogador adicionado e times atualizados automaticamente!");
+      setOpen(true);
+    },
+    [],
+  );
+
   const handleCreateTeam = useCallback(
     async (formData: { name: string; round_id: number }) => {
       try {
@@ -303,6 +314,7 @@ const RoundPage: React.FC = () => {
             onCreate={handleCreatePlayer}
             championshipId={round?.championship_id?.toString()}
             currentPlayers={currentPlayers}
+        onSuccess={handlePlayerModalSuccess}
           />
 
           <SearchInput
@@ -435,22 +447,49 @@ interface TeamItemProps {
   onClick: (teamId: number) => void;
 }
 
-const TeamItem = React.memo<TeamItemProps>(({ team, onClick }) => (
-  <motion.div
-    variants={itemVariants}
-    onClick={() => onClick(team.id)}
-    className="border rounded-xl p-4 hover:bg-gray-50 transition-colors"
-  >
-    <div className="flex items-center gap-4">
-      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-        <span className="text-blue-600 font-bold">
-          {team.name.charAt(0).toUpperCase()}
-        </span>
+const TeamItem = React.memo<TeamItemProps>(({ team, onClick }) => {
+  const players = team.players ?? [];
+  const totalPlayers = team.player_count ?? players.length;
+  const visiblePlayers = players.slice(0, 5);
+  const remainingPlayers = players.length - visiblePlayers.length;
+
+  return (
+    <motion.div
+      variants={itemVariants}
+      onClick={() => onClick(team.id)}
+      className="border rounded-xl p-4 hover:bg-gray-50 transition-colors"
+    >
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+          <span className="text-blue-600 font-bold">
+            {team.name.charAt(0).toUpperCase()}
+          </span>
+        </div>
+        <div>
+          <h3 className="font-semibold">{team.name}</h3>
+          <p className="text-sm text-gray-500">
+            {totalPlayers} jogador{totalPlayers === 1 ? "" : "es"}
+          </p>
+        </div>
       </div>
-      <h3 className="font-semibold">{team.name}</h3>
-    </div>
-  </motion.div>
-));
+      {players.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-4">
+          {visiblePlayers.map((player) => (
+            <span
+              key={player.id}
+              className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600"
+            >
+              {player.name.split(" ")[0]}
+            </span>
+          ))}
+          {remainingPlayers > 0 && (
+            <span className="text-xs text-gray-400">+{remainingPlayers}</span>
+          )}
+        </div>
+      )}
+    </motion.div>
+  );
+});
 
 interface SearchInputProps {
   value: string;

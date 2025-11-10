@@ -1,4 +1,5 @@
 import { BaseService } from "./baseService";
+import { Round, Team } from "../types";
 
 // ===== CONCRETE SERVICE IMPLEMENTATION =====
 // Player service with specific operations
@@ -30,23 +31,23 @@ class PlayerService extends BaseService {
   }
 
   // ===== Business Logic Operations =====
-  async addToRound(id: number, roundId: number): Promise<unknown> {
+  async addToRound(id: number, roundId: number): Promise<Round> {
     try {
       const response = await this.executeRequest('POST', `/${id}/add_to_round`, {
         round_id: roundId,
       });
-      return this.handleResponse(response);
+      return this.handleResponse<Round>(response);
     } catch (error) {
       this.handleError(error);
     }
   }
 
-  async addToTeam(id: number, teamId: number): Promise<unknown> {
+  async addToTeam(id: number, teamId: number): Promise<Team> {
     try {
       const response = await this.executeRequest('POST', `/${id}/add_to_team`, {
         team_id: teamId,
       });
-      return this.handleResponse(response);
+      return this.handleResponse<Team>(response);
     } catch (error) {
       this.handleError(error);
     }

@@ -25,13 +25,13 @@ const championshipService = {
 
   // Create a new championship
   create: async (data: unknown) => {
-    const response = await api.post("/", data);
+    const response = await api.post("/", { championship: data });
     return response.data;
   },
 
   // Update an existing championship
   update: async (id: number, data: unknown) => {
-    const response = await api.put(`/${id}`, data);
+    const response = await api.put(`/${id}`, { championship: data });
     return response.data;
   },
 

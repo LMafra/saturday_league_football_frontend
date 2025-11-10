@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaPlus, FaTrophy } from "react-icons/fa";
+import { FaPlus, FaTrophy, FaUsers } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
 import championshipService from "../../../services/championshipService";
-import CreateChampionshipModal from "./CreateChampionshipModal";
+import CreateChampionshipModal, { ChampionshipPayload } from "./CreateChampionshipModal";
 import { Championship } from "../../../types";
 
 const ChampionshipsPage: React.FC = () => {
@@ -32,7 +32,7 @@ const ChampionshipsPage: React.FC = () => {
     fetchChampionships();
   }, []);
 
-  const handleCreateChampionship = async (formData: { name: string }) => {
+  const handleCreateChampionship = async (formData: ChampionshipPayload) => {
     try {
       const createdChampionship = await championshipService.create(formData);
       setMessage(`Pelada "${createdChampionship.name}" criada com sucesso!`);
@@ -113,6 +113,14 @@ const ChampionshipsPage: React.FC = () => {
                   <div className="bg-gray-50 px-6 py-4 border-t border-gray-100">
                     <div className="text-sm text-gray-600">
                       {championship.description}
+                    </div>
+                    <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <FaUsers className="text-blue-500" /> Min: {championship.min_players_per_team}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <FaUsers className="text-green-500" /> Máx: {championship.max_players_per_team}
+                      </span>
                     </div>
                   </div>
                 </div>

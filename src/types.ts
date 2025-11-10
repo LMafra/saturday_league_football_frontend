@@ -2,6 +2,8 @@ export interface Championship {
   id: number;
   name: string;
   description?: string;
+  min_players_per_team: number;
+  max_players_per_team: number;
   created_at: string;
   updated_at: string;
   round_total: number;
@@ -76,4 +78,5 @@ export interface Team {
   updated_at: string;
   matches?: Match[];
   players?: Player[];
+  player_count?: number;
 }

@@ -21,7 +21,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import { Player } from "../../../types";
+import { Player, Team, Round } from "../../../types";
 import CreatePlayerModal from "../players/CreatePlayerModal";
 import PlayerCard from "../../card/PlayerCard";
 import StatCard from "../../card/StatCard";
@@ -129,6 +129,18 @@ const TeamPage: React.FC = () => {
       setOpen(false);
     },
     [],
+  );
+
+  const handleExistingPlayerAddedToTeam = useCallback(
+    (payload?: Team | Round) => {
+      if (!payload || "championship_id" in payload) return;
+      const updatedTeam = payload as Team;
+      setTeam(updatedTeam);
+      setPlayersFromTeam(updatedTeam.players || []);
+      setMessage(`Jogador adicionado ao time "${updatedTeam.name}"!`);
+      setOpen(true);
+    },
+    [setTeam, setPlayersFromTeam],
   );
 
   const handleCreatePlayer = useCallback(
@@ -325,6 +337,7 @@ const TeamPage: React.FC = () => {
         playersFromRound={playersFromRound}
         selectedRoundId={selectedRoundId}
         onRoundChange={setSelectedRoundId}
+        onSuccess={handleExistingPlayerAddedToTeam}
       />
 
       <motion.div

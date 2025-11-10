@@ -116,7 +116,7 @@ const ChampionshipPage: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-blue-50 p-6 rounded-lg shadow">
           <h3 className="text-xl font-semibold text-blue-800 mb-2">
             Rodadas Totais
@@ -131,6 +131,22 @@ const ChampionshipPage: React.FC = () => {
           </h3>
           <p className="text-3xl font-bold text-green-600">
             {championship.total_players}
+          </p>
+        </div>
+        <div className="bg-purple-50 p-6 rounded-lg shadow">
+          <h3 className="text-xl font-semibold text-purple-800 mb-2">
+            Mínimo por Time
+          </h3>
+          <p className="text-3xl font-bold text-purple-600">
+            {championship.min_players_per_team}
+          </p>
+        </div>
+        <div className="bg-yellow-50 p-6 rounded-lg shadow">
+          <h3 className="text-xl font-semibold text-yellow-800 mb-2">
+            Máximo por Time
+          </h3>
+          <p className="text-3xl font-bold text-yellow-600">
+            {championship.max_players_per_team}
           </p>
         </div>
       </div>

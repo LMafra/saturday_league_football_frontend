@@ -11,9 +11,10 @@ interface FormInputProps {
   ) => void;
   placeholder: string;
   required?: boolean;
-  type?: "text" | "textarea" | "select";
+  type?: "text" | "textarea" | "select" | "number";
   options?: { id: number | number; name: string }[];
   rows?: number;
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
 }
 
 export const FormInput: React.FC<FormInputProps> = ({
@@ -26,21 +27,23 @@ export const FormInput: React.FC<FormInputProps> = ({
   type = "text",
   options = [],
   rows = 3,
+  inputProps = {},
 }) => (
   <div className="mb-6">
     <label className="block text-sm font-medium text-gray-700 mb-2">
       {label} {required && "*"}
     </label>
 
-    {type === "text" && (
+    {(type === "text" || type === "number") && (
       <input
         name={name}
-        type="text"
+        type={type}
         value={value}
         onChange={onChange}
         className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
         placeholder={placeholder}
         required={required}
+        {...inputProps}
       />
     )}
 
