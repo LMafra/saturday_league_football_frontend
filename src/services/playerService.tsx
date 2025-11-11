@@ -1,7 +1,7 @@
-import { BaseService } from "./baseService";
+import { BaseService } from "@/shared/api/baseService";
 import { Player, PlayerStat } from "@/types";
 
-export interface PlayerFilters {
+export interface PlayerFilters extends Record<string, unknown> {
   championship_id?: number;
 }
 
@@ -45,23 +45,15 @@ class PlayerService extends BaseService<Player, UpsertPlayerPayload, UpsertPlaye
 
   // ===== Business Logic Operations =====
   async addToRound(id: number, roundId: number): Promise<Player> {
-    try {
-      const payload: AddAssociationPayload = { round_id: roundId };
-      const response = await this.executeRequest<Player>("POST", `/${id}/add_to_round`, payload);
-      return this.handleResponse(response);
-    } catch (error) {
-      this.handleError(error);
-    }
+    const payload: AddAssociationPayload = { round_id: roundId };
+    const response = await this.executeRequest<Player>("POST", `/${id}/add_to_round`, payload);
+    return this.handleResponse(response);
   }
 
   async addToTeam(id: number, teamId: number): Promise<Player> {
-    try {
-      const payload: AddAssociationPayload = { team_id: teamId };
-      const response = await this.executeRequest<Player>("POST", `/${id}/add_to_team`, payload);
-      return this.handleResponse(response);
-    } catch (error) {
-      this.handleError(error);
-    }
+    const payload: AddAssociationPayload = { team_id: teamId };
+    const response = await this.executeRequest<Player>("POST", `/${id}/add_to_team`, payload);
+    return this.handleResponse(response);
   }
 
   async matchStats(
@@ -70,21 +62,17 @@ class PlayerService extends BaseService<Player, UpsertPlayerPayload, UpsertPlaye
     teamId: number,
     roundId: number,
   ): Promise<PlayerStat[]> {
-    try {
-      const response = await this.executeRequest<PlayerStat[]>(
-        "GET",
-        `/${id}/match_stats`,
-        undefined,
-        {
-          match_id: matchId,
-          team_id: teamId,
-          round_id: roundId,
-        },
-      );
-      return this.handleResponse(response);
-    } catch (error) {
-      this.handleError(error);
-    }
+    const response = await this.executeRequest<PlayerStat[]>(
+      "GET",
+      `/${id}/match_stats`,
+      undefined,
+      {
+        match_id: matchId,
+        team_id: teamId,
+        round_id: roundId,
+      },
+    );
+    return this.handleResponse(response);
   }
 }
 
