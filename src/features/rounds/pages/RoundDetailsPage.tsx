@@ -60,6 +60,10 @@ const RoundDetailsPage = () => {
 
   const invalidateRound = () =>
     queryClient.invalidateQueries({ queryKey: queryKeys.round(roundId) });
+  const handleExistingPlayerAdded = () => {
+    setToast({ open: true, message: "Jogador adicionado com sucesso!" });
+    invalidateRound();
+  };
 
   const matchMutation = useMutation({
     mutationFn: matchRepository.createMatch.bind(matchRepository),
@@ -371,6 +375,7 @@ const RoundDetailsPage = () => {
           currentPlayers={players}
           rounds={[round]}
           selectedRoundId={roundId}
+          onExistingPlayerAdded={handleExistingPlayerAdded}
         />
       )}
       {isTeamModalOpen && (

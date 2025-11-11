@@ -11,6 +11,7 @@ type UpsertPlayerPayload = Partial<
 > & {
   team_id?: number;
   player_rounds_attributes?: Array<{ round_id: number }>;
+  championship_id?: number;
 };
 
 class PlayerRepository extends BaseService<

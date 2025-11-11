@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import BaseModal from "@/shared/components/modal/BaseModal";
-import ActionButtons from "@/shared/components/modal/ActionButtons";
 import RoundFilterSection from "@/features/rounds/components/RoundFilterSection";
 import PlayerSearchInput from "@/features/players/components/PlayerSearchInput";
 import playerRepository from "@/features/players/api/playerRepository";
@@ -11,6 +10,7 @@ interface CreatePlayerPayload {
   name: string;
   player_rounds_attributes?: Array<{ round_id: number }>;
   team_id?: number;
+  championship_id?: number;
 }
 
 interface CreatePlayerModalProps {
@@ -24,6 +24,7 @@ interface CreatePlayerModalProps {
   playersFromRound?: Player[];
   selectedRoundId?: number | null;
   onRoundChange?: (roundId: number) => void;
+  onExistingPlayerAdded?: () => void;
 }
 
 const CreatePlayerModal = ({
@@ -37,6 +38,7 @@ const CreatePlayerModal = ({
   playersFromRound = [],
   selectedRoundId = null,
   onRoundChange = () => {},
+  onExistingPlayerAdded,
 }: CreatePlayerModalProps) => {
   const { id: routeIdParam } = useParams<{ id: string }>();
   const routeId = useMemo(() => (routeIdParam ? Number(routeIdParam) : undefined), [routeIdParam]);
@@ -114,8 +116,17 @@ const CreatePlayerModal = ({
         } else {
           await playerRepository.addToTeam(selectedPlayer.id, targetId);
         }
+        onExistingPlayerAdded?.();
       } else {
-        const payload: CreatePlayerPayload = { name: searchTerm };
+        if (!championshipId) {
+          setError("Não foi possível identificar a pelada para criar o jogador.");
+          return;
+        }
+
+        const payload: CreatePlayerPayload = {
+          name: searchTerm,
+          championship_id: championshipId,
+        };
         if (context === "round") {
           payload.player_rounds_attributes = [{ round_id: targetId }];
         } else {
@@ -131,7 +142,7 @@ const CreatePlayerModal = ({
           : "Não foi possível concluir a operação.",
       );
     }
-  }, [context, handleClose, onCreate, searchTerm, selectedPlayer, targetId]);
+  }, [championshipId, context, handleClose, onCreate, searchTerm, selectedPlayer, targetId]);
 
   return (
     <BaseModal
@@ -186,14 +197,6 @@ const CreatePlayerModal = ({
               {error}
             </div>
           )}
-          <ActionButtons
-            isSubmitting={isLoading}
-            searchTerm={searchTerm}
-            selectedPlayer={selectedPlayer}
-            context={context}
-            onClose={handleClose}
-            onSubmit={() => void handleSubmit()}
-          />
         </div>
       </form>
     </BaseModal>
