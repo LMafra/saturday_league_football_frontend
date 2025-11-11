@@ -118,13 +118,19 @@ const CreatePlayerModal = ({
         }
         onExistingPlayerAdded?.();
       } else {
+        const normalizedName = searchTerm.trim();
+        if (!normalizedName) {
+          setError("Informe um nome válido para o jogador.");
+          return;
+        }
+
         if (!championshipId) {
           setError("Não foi possível identificar a pelada para criar o jogador.");
           return;
         }
 
         const payload: CreatePlayerPayload = {
-          name: searchTerm,
+          name: normalizedName,
           championship_id: championshipId,
         };
         if (context === "round") {
@@ -142,7 +148,16 @@ const CreatePlayerModal = ({
           : "Não foi possível concluir a operação.",
       );
     }
-  }, [championshipId, context, handleClose, onCreate, searchTerm, selectedPlayer, targetId]);
+  }, [
+    championshipId,
+    context,
+    handleClose,
+    onCreate,
+    onExistingPlayerAdded,
+    searchTerm,
+    selectedPlayer,
+    targetId,
+  ]);
 
   return (
     <BaseModal
@@ -155,7 +170,7 @@ const CreatePlayerModal = ({
       }
       formId="create-player-form"
       isSubmitting={isLoading}
-      submitDisabled={isLoading || (!selectedPlayer && !searchTerm)}
+      submitDisabled={isLoading || (!selectedPlayer && !searchTerm.trim())}
       submitLabel={
         selectedPlayer
           ? `Adicionar ao ${context === "team" ? "Time" : "Round"}`
