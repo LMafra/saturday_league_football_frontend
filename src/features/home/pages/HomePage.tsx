@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { FaChartLine, FaRobot, FaTrophy } from "react-icons/fa";
 import Container from "@/shared/components/layout/Container";
 import { typography } from "@/shared/styles/tokens";
+import MatchEventTicker from "@/features/home/components/MatchEventTicker";
 
 const heroFeatures = [
   {
@@ -55,6 +56,7 @@ const HomePage = () => (
           </Link>
         </motion.div>
         </div>
+        <MatchEventTicker />
       </Container>
     </section>
     <section className="bg-white/5 py-20 backdrop-blur-lg">

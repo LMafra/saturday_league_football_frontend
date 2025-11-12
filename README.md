@@ -2,6 +2,17 @@
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
+## Environment Variables
+
+Create a `.env` file with:
+
+```
+VITE_BASE_URL=http://localhost:4000
+VITE_EVENT_STREAM_URL=http://localhost:4000
+```
+
+`VITE_EVENT_STREAM_URL` should point to the platform event gateway in order to stream live events to the UI.
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
