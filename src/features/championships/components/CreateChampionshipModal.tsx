@@ -10,7 +10,7 @@ export interface ChampionshipPayload {
   max_players_per_team: number;
 }
 
-interface ChampionshipFormState {
+interface ChampionshipFormState extends Record<string, string> {
   name: string;
   description: string;
   min_players_per_team: string;

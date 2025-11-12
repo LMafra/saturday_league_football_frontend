@@ -10,10 +10,12 @@ const { mockList, mockAddToRound, mockAddToTeam } = vi.hoisted(() => ({
   mockAddToTeam: vi.fn(),
 }));
 
+type MockMotionDivProps = Record<string, unknown> & { children?: ReactNode };
+
 vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }: { children: ReactNode }) => <>{children}</>,
   motion: {
-    div: ({ children, ...rest }: Record<string, unknown>) => <div {...rest}>{children}</div>,
+    div: ({ children, ...rest }: MockMotionDivProps) => <div {...rest}>{children}</div>,
   },
 }));
 
