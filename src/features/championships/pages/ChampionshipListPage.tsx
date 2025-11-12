@@ -6,7 +6,9 @@ import { SnackbarCloseReason } from "@mui/material/Snackbar";
 import { motion } from "framer-motion";
 import { FaPlus, FaTrophy } from "react-icons/fa";
 import championshipRepository from "@/features/championships/api/championshipRepository";
-import CreateChampionshipModal from "@/features/championships/components/CreateChampionshipModal";
+import CreateChampionshipModal, {
+  ChampionshipPayload,
+} from "@/features/championships/components/CreateChampionshipModal";
 import Container from "@/shared/components/layout/Container";
 import { typography } from "@/shared/styles/tokens";
 import { Championship } from "@/types";
@@ -30,7 +32,7 @@ const ChampionshipListPage = () => {
   });
 
   const createMutation = useMutation({
-    mutationFn: (payload: { name: string; description?: string }) =>
+    mutationFn: (payload: ChampionshipPayload) =>
       championshipRepository.createChampionship(payload),
     onSuccess: (created) => {
       setToast({

@@ -2,7 +2,10 @@ import { BaseService } from "@/shared/api/baseService";
 import { Championship } from "@/types";
 
 type UpsertChampionshipPayload = Partial<
-  Pick<Championship, "name" | "description">
+  Pick<
+    Championship,
+    "name" | "description" | "min_players_per_team" | "max_players_per_team"
+  >
 >;
 
 class ChampionshipRepository extends BaseService<

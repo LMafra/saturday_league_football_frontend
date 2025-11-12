@@ -72,6 +72,10 @@ const TeamDetailsPage = () => {
           mutationError instanceof Error ? mutationError.message : "Erro ao criar jogador.",
       }),
   });
+  const handleExistingPlayerAdded = () => {
+    setToast({ open: true, message: "Jogador adicionado ao time!" });
+    queryClient.invalidateQueries({ queryKey: queryKeys.team(teamId) });
+  };
 
   const players = useMemo(() => team?.players ?? [], [team?.players]);
 
@@ -324,8 +328,10 @@ const TeamDetailsPage = () => {
               team_id: teamId,
             });
           }}
+          championshipId={team.championship_id}
           context="team"
           currentPlayers={players}
+          onExistingPlayerAdded={handleExistingPlayerAdded}
         />
       )}
 

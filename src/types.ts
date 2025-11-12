@@ -2,6 +2,8 @@ export interface Championship {
   id: number;
   name: string;
   description?: string;
+  min_players_per_team: number;
+  max_players_per_team: number;
   created_at: string;
   updated_at: string;
   round_total: number;
@@ -26,6 +28,7 @@ export interface Player {
   id: number;
   name: string;
   position?: string;
+  championship_id?: number;
   created_at: string;
   updated_at: string;
   total_goals: number;
@@ -72,8 +75,10 @@ export interface Match {
 export interface Team {
   id: number;
   name: string;
+  championship_id?: number;
   created_at: string;
   updated_at: string;
   matches?: Match[];
   players?: Player[];
+  player_count?: number;
 }
