@@ -9,6 +9,9 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: resolve(__dirname, "vitest.setup.ts"),
     css: true,
+    coverage: {
+      provider: "v8",
+    },
   },
   resolve: {
     alias: {
