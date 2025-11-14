@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   react-ci:
-    uses: LMafra/SarradaHub/platform/ci/workflows/react-vite-ci.yaml@main
+    uses: SarradaHub/platform/.github/workflows/react-vite-ci.yaml@main
     with:
       working-directory: .
       node-version: '20'

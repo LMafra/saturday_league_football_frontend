@@ -46,20 +46,20 @@ const Footer = () => {
           <h4 className="text-lg font-semibold text-white">Contato</h4>
           <div className="space-y-2">
             <a
-              href="mailto:chagas.lucas.mafra@gmail.com"
+              href="mailto:sarradahub@gmail.com"
               className="flex items-center gap-2 transition-colors hover:text-blue-400"
             >
               <FiMail className="flex-shrink-0" aria-hidden />
               chagas.lucas.mafra@gmail.com
             </a>
             <a
-              href="https://github.com/LMafra"
+              href="https://github.com/SarradaHub"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 transition-colors hover:text-blue-400"
             >
               <FiGithub className="flex-shrink-0" aria-hidden />
-              LMafra
+              SarradaHub
             </a>
           </div>
         </div>
