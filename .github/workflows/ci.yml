@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  react-ci:
+    uses: LMafra/SarradaHub/platform/ci/workflows/react-vite-ci.yaml@main
+    with:
+      working-directory: .
+      node-version: '20'
+      install-command: npm ci
+      lint-command: npm run lint
+      test-command: npm run test -- --coverage
+      build-command: npm run build
+
