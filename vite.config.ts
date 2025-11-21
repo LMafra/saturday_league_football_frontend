@@ -25,8 +25,8 @@ export default defineConfig({
         target: 'http://localhost:3004',
         changeOrigin: true,
         secure: false,
-        configure: (proxy, _options) => {
-          proxy.on('proxyReq', (_proxyReq, req, _res) => {
+        configure: (proxy) => {
+          proxy.on('proxyReq', (_proxyReq, req) => {
             console.log('Proxying request:', req.method, req.url, '-> http://localhost:3004');
           });
         },
