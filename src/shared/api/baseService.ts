@@ -5,7 +5,15 @@ export class ApiConfigAdapter {
   private readonly baseURL: string;
 
   private constructor() {
-    this.baseURL = import.meta.env.VITE_BASE_URL;
+    // Use relative URL in development to leverage Vite proxy
+    // If VITE_BASE_URL is set to http://localhost (without port), use empty string for proxy
+    // Otherwise use the provided base URL
+    const envBaseURL = import.meta.env.VITE_BASE_URL;
+    if (envBaseURL === "http://localhost" || !envBaseURL) {
+      this.baseURL = "";
+    } else {
+      this.baseURL = envBaseURL;
+    }
   }
 
   static getInstance(): ApiConfigAdapter {
