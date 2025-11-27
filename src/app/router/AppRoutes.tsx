@@ -9,10 +9,18 @@ const ChampionshipListPage = lazy(
 const ChampionshipDetailsPage = lazy(
   () => import("@/features/championships/pages/ChampionshipDetailsPage"),
 );
-const RoundDetailsPage = lazy(() => import("@/features/rounds/pages/RoundDetailsPage"));
-const MatchDetailsPage = lazy(() => import("@/features/matches/pages/MatchDetailsPage"));
-const PlayerDetailsPage = lazy(() => import("@/features/players/pages/PlayerDetailsPage"));
-const TeamDetailsPage = lazy(() => import("@/features/teams/pages/TeamDetailsPage"));
+const RoundDetailsPage = lazy(
+  () => import("@/features/rounds/pages/RoundDetailsPage"),
+);
+const MatchDetailsPage = lazy(
+  () => import("@/features/matches/pages/MatchDetailsPage"),
+);
+const PlayerDetailsPage = lazy(
+  () => import("@/features/players/pages/PlayerDetailsPage"),
+);
+const TeamDetailsPage = lazy(
+  () => import("@/features/teams/pages/TeamDetailsPage"),
+);
 
 const LoadingScreen = () => (
   <div className="flex min-h-[60vh] items-center justify-center">
@@ -35,4 +43,3 @@ const AppRoutes = () => (
 );
 
 export default AppRoutes;
-

@@ -38,13 +38,15 @@ const FormInput = ({
         <Textarea
           name={name}
           value={value}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChange(e as ChangeEvent<InputElement>)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+            onChange(e as ChangeEvent<InputElement>)
+          }
           placeholder={placeholder}
           required={required}
           rows={rows}
           error={error}
           label={label}
-          {...(inputProps as any)}
+          {...(inputProps as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
         />
       );
     }
@@ -63,7 +65,9 @@ const FormInput = ({
         <Select
           name={name}
           value={value}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange(e as ChangeEvent<InputElement>)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            onChange(e as ChangeEvent<InputElement>)
+          }
           required={required}
           error={error}
           label={label}
@@ -77,7 +81,9 @@ const FormInput = ({
         name={name}
         type={type}
         value={value}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e as ChangeEvent<InputElement>)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange(e as ChangeEvent<InputElement>)
+        }
         placeholder={placeholder}
         required={required}
         error={error}
@@ -87,12 +93,7 @@ const FormInput = ({
     );
   };
 
-  return (
-    <div className="mb-6">
-      {renderField()}
-    </div>
-  );
+  return <div className="mb-6">{renderField()}</div>;
 };
 
 export default FormInput;
-

@@ -25,12 +25,7 @@ const BaseModal = ({
   size = "md",
 }: BaseModalProps) => {
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={title}
-      size={size}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title={title} size={size}>
       {children}
       <div className="mt-8 flex justify-end gap-3">
         <Button
@@ -57,4 +52,3 @@ const BaseModal = ({
 };
 
 export default BaseModal;
-

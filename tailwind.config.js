@@ -1,5 +1,5 @@
 // tailwind.config.js
-const designSystemConfig = require('../../platform/design-system/tailwind.config.js');
+const designSystemConfig = require("../../platform/design-system/tailwind.config.js");
 
 module.exports = {
   content: [

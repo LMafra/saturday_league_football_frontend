@@ -26,7 +26,7 @@ const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
         padding="md"
         className={cn(
           "flex items-center justify-between border-l-4",
-          accentColorClassName
+          accentColorClassName,
         )}
       >
         <CardContent className="flex items-center justify-between w-full p-0">
@@ -40,10 +40,9 @@ const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
         </CardContent>
       </Card>
     </motion.div>
-  )
+  ),
 );
 
 StatCard.displayName = "StatCard";
 
 export default StatCard;
-

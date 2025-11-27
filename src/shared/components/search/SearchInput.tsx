@@ -2,7 +2,8 @@ import { ComponentProps, forwardRef, ChangeEvent } from "react";
 import { FaSearch } from "react-icons/fa";
 import { Input, cn } from "@sarradahub/design-system";
 
-interface SearchInputProps extends Omit<ComponentProps<typeof Input>, "onChange" | "value"> {
+interface SearchInputProps
+  extends Omit<ComponentProps<typeof Input>, "onChange" | "value"> {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
@@ -18,7 +19,9 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
           type="text"
           placeholder={placeholder}
           value={value}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            onChange(e.target.value)
+          }
           className="pl-10"
           {...props}
         />
@@ -28,10 +31,9 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
         />
       </div>
     );
-  }
+  },
 );
 
 SearchInput.displayName = "SearchInput";
 
 export default SearchInput;
-
