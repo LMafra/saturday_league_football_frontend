@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, beforeEach, vi } from "vitest";
@@ -26,6 +27,27 @@ vi.mock("@/features/players/api/playerRepository", () => ({
     list: mockList,
     addToRound: mockAddToRound,
     addToTeam: mockAddToTeam,
+  },
+}));
+
+vi.mock("@/shared/components/modal/BaseModal", () => ({
+  default: ({ isOpen, onClose, title, children, submitLabel, formId, submitDisabled, isSubmitting }: { isOpen: boolean; onClose: () => void; title?: string; children: ReactNode; submitLabel?: string; formId?: string; submitDisabled?: boolean; isSubmitting?: boolean }) => {
+    if (!isOpen) return null;
+    return (
+      <div data-testid="modal" role="dialog" aria-modal="true">
+        {title && <h2>{title}</h2>}
+        <button onClick={onClose} aria-label="Close modal">×</button>
+        {children}
+        <div>
+          <button type="button" onClick={onClose} disabled={isSubmitting}>
+            Cancelar
+          </button>
+          <button type="submit" form={formId} disabled={submitDisabled || isSubmitting} aria-label={submitLabel}>
+            {submitLabel || "Submit"}
+          </button>
+        </div>
+      </div>
+    );
   },
 }));
 

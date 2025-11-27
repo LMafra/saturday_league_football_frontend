@@ -12,6 +12,7 @@ import CreateChampionshipModal, {
 import Container from "@/shared/components/layout/Container";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
 import { Alert, Button } from "@sarradahub/design-system";
+import { colors } from "@sarradahub/design-system/tokens";
 import { Championship } from "@/types";
 
 const queryKeys = {

@@ -11,6 +11,7 @@ import CreateRoundModal from "@/features/rounds/components/CreateRoundModal";
 import Container from "@/shared/components/layout/Container";
 import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
 import { Alert } from "@sarradahub/design-system";
+import { colors } from "@sarradahub/design-system/tokens";
 import { Round } from "@/types";
 
 const queryKeys = {
