@@ -28,7 +28,8 @@ import CreatePlayerModal from "@/features/players/components/CreatePlayerModal";
 import StatCard from "@/shared/components/cards/StatCard";
 import SearchInput from "@/shared/components/search/SearchInput";
 import Container from "@/shared/components/layout/Container";
-import { typography } from "@/shared/styles/tokens";
+import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
+import { typography, colors } from "@sarradahub/design-system/tokens";
 import { Player } from "@/types";
 
 const queryKeys = {
@@ -146,7 +147,11 @@ const TeamDetailsPage = () => {
   }
 
   if (isLoading) {
-    return <div className="mt-24 flex min-h-screen items-center justify-center">Carregando...</div>;
+    return (
+      <div className="mt-24 flex min-h-screen items-center justify-center">
+        <LoadingSpinner size="lg" text="Carregando..." />
+      </div>
+    );
   }
 
   if (error || !team) {
@@ -166,11 +171,11 @@ const TeamDetailsPage = () => {
   return (
     <div
       className="mt-24 min-h-screen bg-gray-50 py-8"
-      style={{ fontFamily: typography.fontFamily }}
+      style={{ fontFamily: typography.fontFamily.sans }}
     >
       <Container>
-        <div className="flex flex-col gap-8">
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
             <div>
               <button
@@ -199,7 +204,7 @@ const TeamDetailsPage = () => {
           </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <section className="md:col-span-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <StatCard
             title="Total de Jogadores"
             value={stats.totalPlayers}
@@ -232,7 +237,7 @@ const TeamDetailsPage = () => {
           />
         </section>
 
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
+        <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
           <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-2xl font-semibold text-gray-900">Jogadores</h2>
@@ -286,7 +291,7 @@ const TeamDetailsPage = () => {
           )}
         </section>
 
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
+        <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
           <h2 className="text-2xl font-semibold text-gray-900">Desempenho Aggregado</h2>
           {chartData.length > 0 ? (
             <div className="mt-6 h-80">
@@ -296,14 +301,14 @@ const TeamDetailsPage = () => {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="goals" name="Gols" fill="#3B82F6">
+                  <Bar dataKey="goals" name="Gols" fill={colors.primary[500]}>
                     {chartData.map((_, index) => (
-                      <Cell key={`goal-cell-${index}`} fill={index % 2 === 0 ? "#2563EB" : "#3B82F6"} />
+                      <Cell key={`goal-cell-${index}`} fill={index % 2 === 0 ? colors.primary[600] : colors.primary[500]} />
                     ))}
                   </Bar>
-                  <Bar dataKey="assists" name="Assistências" fill="#10B981">
+                  <Bar dataKey="assists" name="Assistências" fill={colors.success[500]}>
                     {chartData.map((_, index) => (
-                      <Cell key={`assist-cell-${index}`} fill={index % 2 === 0 ? "#0EA5E9" : "#10B981"} />
+                      <Cell key={`assist-cell-${index}`} fill={index % 2 === 0 ? colors.info[400] : colors.success[500]} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -315,7 +320,7 @@ const TeamDetailsPage = () => {
             </p>
           )}
         </section>
-      </div>
+        </div>
       </Container>
 
       {isModalOpen && (
@@ -343,7 +348,7 @@ const TeamDetailsPage = () => {
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         sx={{
           "& .MuiSnackbarContent-root": {
-            backgroundColor: toast.message?.includes("sucesso") ? "#2563eb" : "#b91c1c",
+            backgroundColor: toast.message?.includes("sucesso") ? colors.primary[600] : colors.error[700],
             color: "#fff",
           },
         }}

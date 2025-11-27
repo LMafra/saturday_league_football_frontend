@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
-import { typography, colors } from "@/shared/styles/tokens";
+import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
 
 const HomePage = lazy(() => import("@/features/home/pages/HomePage"));
 const ChampionshipListPage = lazy(
@@ -15,11 +15,8 @@ const PlayerDetailsPage = lazy(() => import("@/features/players/pages/PlayerDeta
 const TeamDetailsPage = lazy(() => import("@/features/teams/pages/TeamDetailsPage"));
 
 const LoadingScreen = () => (
-  <div
-    className="flex min-h-[60vh] items-center justify-center text-sm text-gray-500"
-    style={{ fontFamily: typography.fontFamily, color: colors.neutral[700] }}
-  >
-    Carregando conteúdo...
+  <div className="flex min-h-[60vh] items-center justify-center">
+    <LoadingSpinner size="lg" text="Carregando conteúdo..." />
   </div>
 );
 

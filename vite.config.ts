@@ -13,7 +13,14 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),
+      // Alias root import to the actual entry point
+      "@sarradahub/design-system$": resolve(__dirname, "../platform/design-system/dist/index.js"),
+      // Alias subpath imports to their actual locations
+      "@sarradahub/design-system/tokens": resolve(__dirname, "../platform/design-system/dist/tokens/index.js"),
+      "@sarradahub/design-system/css": resolve(__dirname, "../platform/design-system/dist/tokens/css-variables.css"),
     },
+    // Ensure Vite respects package.json exports for subpath imports
+    conditions: ["import", "module", "browser", "default"],
   },
   server: {
     port: process.env.PORT && process.env.PORT.trim() !== "" 

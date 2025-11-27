@@ -10,7 +10,9 @@ import CreateChampionshipModal, {
   ChampionshipPayload,
 } from "@/features/championships/components/CreateChampionshipModal";
 import Container from "@/shared/components/layout/Container";
-import { typography } from "@/shared/styles/tokens";
+import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
+import { typography, colors } from "@sarradahub/design-system/tokens";
+import { Alert, Button } from "@sarradahub/design-system";
 import { Championship } from "@/types";
 
 const queryKeys = {
@@ -63,14 +65,20 @@ const ChampionshipListPage = () => {
   };
 
   if (isLoading) {
-    return <div className="mt-24 flex min-h-screen items-center justify-center">Carregando peladas...</div>;
+    return (
+      <div className="mt-24 flex min-h-screen items-center justify-center">
+        <LoadingSpinner size="lg" text="Carregando peladas..." />
+      </div>
+    );
   }
 
   if (error) {
     const message = error instanceof Error ? error.message : "Ocorreu um erro inesperado.";
     return (
       <div className="mt-24 flex min-h-screen items-center justify-center">
-        <span className="rounded-lg bg-red-50 px-4 py-3 text-red-600">{message}</span>
+        <Alert variant="error" title="Erro ao carregar peladas">
+          {message}
+        </Alert>
       </div>
     );
   }
@@ -78,29 +86,32 @@ const ChampionshipListPage = () => {
   return (
     <div
       className="mt-24 min-h-screen bg-gray-50 py-8"
-      style={{ fontFamily: typography.fontFamily }}
+      style={{ fontFamily: typography.fontFamily.sans }}
     >
       <Container>
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="flex items-center gap-2 text-3xl font-bold text-gray-900">
-            <FaTrophy className="text-yellow-500" aria-hidden />
-            Peladas Cadastradas
-          </h1>
-          <button
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div className="md:col-span-12 mb-8 flex items-center justify-between">
+            <h1 className="flex items-center gap-2 text-3xl font-bold text-gray-900">
+              <FaTrophy className="text-yellow-500" aria-hidden />
+              Peladas Cadastradas
+            </h1>
+          <Button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
+            variant="primary"
+            size="lg"
+            aria-label="Criar nova pelada"
           >
-            <FaPlus aria-hidden />
+            <FaPlus aria-hidden="true" className="mr-2" />
             Nova Pelada
-          </button>
-        </div>
-        {championships && championships.length > 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
-          >
+          </Button>
+          </div>
+          {championships && championships.length > 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="md:col-span-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            >
             {championships.map((championship: Championship) => (
               <motion.button
                 key={championship.id}
@@ -124,12 +135,13 @@ const ChampionshipListPage = () => {
                 </div>
               </motion.button>
             ))}
-          </motion.div>
-        ) : (
-          <div className="rounded-lg bg-white py-12 text-center text-gray-500 shadow-sm">
-            Nenhuma pelada cadastrada ainda.
-          </div>
-        )}
+            </motion.div>
+          ) : (
+            <div className="md:col-span-12 rounded-lg bg-white py-12 text-center text-gray-500 shadow-sm">
+              Nenhuma pelada cadastrada ainda.
+            </div>
+          )}
+        </div>
       </Container>
       {isModalOpen && (
         <CreateChampionshipModal
@@ -148,7 +160,7 @@ const ChampionshipListPage = () => {
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         sx={{
           "& .MuiSnackbarContent-root": {
-            backgroundColor: toast.message?.includes("sucesso") ? "#2563eb" : "#b91c1c",
+            backgroundColor: toast.message?.includes("sucesso") ? colors.primary[600] : colors.error[700],
             color: "#fff",
           },
         }}

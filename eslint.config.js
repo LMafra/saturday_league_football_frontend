@@ -26,6 +26,26 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
+      // Design system enforcement rules
+      "react/forbid-dom-props": [
+        "warn",
+        {
+          forbid: [
+            { propName: "style", message: "Use Tailwind classes or design system tokens instead of inline styles" },
+          ],
+        },
+      ],
+      "no-restricted-imports": [
+        "warn",
+        {
+          patterns: [
+            {
+              group: ["**/tokens.ts", "**/tokens.js"],
+              message: "Import tokens from @sarradahub/design-system/tokens instead",
+            },
+          ],
+        },
+      ],
     },
   },
 );

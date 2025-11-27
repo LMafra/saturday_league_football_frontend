@@ -1,6 +1,6 @@
 import { FiGithub, FiMail, FiArrowUpRight } from "react-icons/fi";
 import Container from "@/shared/components/layout/Container";
-import { colors, typography } from "@/shared/styles/tokens";
+import { colors, typography } from "@sarradahub/design-system/tokens";
 
 const footerLinks = [
   { href: "#!", label: "Recursos" },
@@ -14,10 +14,11 @@ const Footer = () => {
   return (
     <footer
       className="bg-gradient-to-b from-slate-900 to-slate-800 text-slate-300"
-      style={{ fontFamily: typography.fontFamily }}
+      style={{ fontFamily: typography.fontFamily.sans }}
     >
       <Container>
-        <div className="grid grid-cols-1 gap-8 py-12 md:grid-cols-3">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div className="md:col-span-12 grid grid-cols-1 gap-8 py-12 md:grid-cols-3">
         <div className="space-y-4">
           <h3 className="text-2xl font-bold" style={{ color: colors.primary[400] }}>
             Pelada Insights
@@ -63,9 +64,10 @@ const Footer = () => {
             </a>
           </div>
         </div>
-      </div>
+          </div>
+        </div>
       </Container>
-      <div className="border-t border-slate-700 py-8 text-center text-slate-400" style={{ fontFamily: typography.fontFamily }}>
+      <div className="border-t border-slate-700 py-8 text-center text-slate-400" style={{ fontFamily: typography.fontFamily.sans }}>
         © {currentYear} Pelada Insights. Todos os direitos reservados.
       </div>
     </footer>

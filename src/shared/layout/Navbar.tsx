@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { FiMenu, FiX } from "react-icons/fi";
 import Container from "@/shared/components/layout/Container";
-import { colors, typography } from "@/shared/styles/tokens";
+import { colors, typography } from "@sarradahub/design-system/tokens";
 
 const navigationLinks = [
   { to: "/championships", label: "Peladas" },
@@ -17,10 +17,11 @@ const Navbar = () => {
   return (
     <nav
       className="fixed inset-x-0 top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur"
-      style={{ fontFamily: typography.fontFamily }}
+      style={{ fontFamily: typography.fontFamily.sans }}
     >
       <Container>
-        <div className="flex h-16 items-center justify-between">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div className="md:col-span-12 flex h-16 items-center justify-between">
           <Link
             to="/"
             className="flex-shrink-0 text-2xl font-bold"
@@ -63,7 +64,8 @@ const Navbar = () => {
         >
           {isOpen ? <FiX className="h-6 w-6" /> : <FiMenu className="h-6 w-6" />}
         </button>
-      </div>
+          </div>
+        </div>
       </Container>
       <div className={`md:hidden ${isOpen ? "block" : "hidden"}`}>
         <div className="space-y-2 border-t bg-white px-4 pb-4 pt-2">

@@ -9,7 +9,9 @@ import championshipRepository from "@/features/championships/api/championshipRep
 import roundRepository from "@/features/rounds/api/roundRepository";
 import CreateRoundModal from "@/features/rounds/components/CreateRoundModal";
 import Container from "@/shared/components/layout/Container";
-import { typography } from "@/shared/styles/tokens";
+import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
+import { typography, colors } from "@sarradahub/design-system/tokens";
+import { Alert } from "@sarradahub/design-system";
 import { Round } from "@/types";
 
 const queryKeys = {
@@ -73,7 +75,11 @@ const ChampionshipDetailsPage = () => {
   }
 
   if (isLoading) {
-    return <div className="mt-24 flex min-h-screen items-center justify-center">Carregando...</div>;
+    return (
+      <div className="mt-24 flex min-h-screen items-center justify-center">
+        <LoadingSpinner size="lg" text="Carregando..." />
+      </div>
+    );
   }
 
   if (error || !championship) {
@@ -85,7 +91,9 @@ const ChampionshipDetailsPage = () => {
           : "Pelada não encontrada.";
     return (
       <div className="mt-24 flex min-h-screen items-center justify-center">
-        <span className="rounded-lg bg-red-50 px-4 py-3 text-red-600">{message}</span>
+        <Alert variant="error" title="Erro">
+          {message}
+        </Alert>
       </div>
     );
   }
@@ -93,17 +101,18 @@ const ChampionshipDetailsPage = () => {
   return (
     <div
       className="mt-24 min-h-screen bg-gray-50 py-8"
-      style={{ fontFamily: typography.fontFamily }}
+      style={{ fontFamily: typography.fontFamily.sans }}
     >
       <Container>
-        <div className="flex flex-col gap-8">
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="mb-4 inline-flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-800"
+            className="mb-4 inline-flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+            aria-label="Voltar para página anterior"
           >
-            <FaArrowLeft aria-hidden />
+            <FaArrowLeft aria-hidden="true" />
             Voltar
           </button>
           <h1 className="text-3xl font-bold text-gray-900">{championship.name}</h1>
@@ -122,20 +131,21 @@ const ChampionshipDetailsPage = () => {
           </dl>
         </section>
 
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
+        <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-2xl font-semibold text-gray-900">Rodadas</h2>
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition-colors hover:bg-blue-700"
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              aria-label="Criar nova rodada"
             >
-              <FaPlus aria-hidden />
+              <FaPlus aria-hidden="true" />
               Nova Rodada
             </button>
           </div>
           {rounds.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {rounds.map((round: Round) => (
                 <motion.button
                   key={round.id}
@@ -158,7 +168,7 @@ const ChampionshipDetailsPage = () => {
           )}
         </section>
 
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
+        <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
           <h2 className="text-2xl font-semibold text-gray-900">Jogadores</h2>
           {players.length > 0 ? (
             <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -186,7 +196,7 @@ const ChampionshipDetailsPage = () => {
             <p className="mt-4 text-gray-500">Nenhum jogador cadastrado nesta pelada.</p>
           )}
         </section>
-      </div>
+        </div>
       </Container>
       {isModalOpen && (
         <CreateRoundModal
@@ -209,7 +219,7 @@ const ChampionshipDetailsPage = () => {
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         sx={{
           "& .MuiSnackbarContent-root": {
-            backgroundColor: toast.message?.includes("sucesso") ? "#2563eb" : "#b91c1c",
+            backgroundColor: toast.message?.includes("sucesso") ? colors.primary[600] : colors.error[700],
             color: "#fff",
           },
         }}

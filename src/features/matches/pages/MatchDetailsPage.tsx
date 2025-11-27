@@ -6,7 +6,8 @@ import { format } from "date-fns";
 import { FaArrowLeft, FaFutbol } from "react-icons/fa";
 import matchRepository from "@/features/matches/api/matchRepository";
 import Container from "@/shared/components/layout/Container";
-import { typography } from "@/shared/styles/tokens";
+import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
+import { typography } from "@sarradahub/design-system/tokens";
 import { Match, Player } from "@/types";
 
 const queryKeys = {
@@ -63,7 +64,11 @@ const MatchDetailsPage = () => {
   }
 
   if (isLoading) {
-    return <div className="mt-24 flex min-h-screen items-center justify-center">Carregando...</div>;
+    return (
+      <div className="mt-24 flex min-h-screen items-center justify-center">
+        <LoadingSpinner size="lg" text="Carregando..." />
+      </div>
+    );
   }
 
   if (error || !match || !team1 || !team2) {
@@ -83,11 +88,11 @@ const MatchDetailsPage = () => {
   return (
     <div
       className="mt-24 min-h-screen bg-gray-50 py-8"
-      style={{ fontFamily: typography.fontFamily }}
+      style={{ fontFamily: typography.fontFamily.sans }}
     >
       <Container>
-        <div className="flex flex-col gap-8">
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
             <div>
               <button
@@ -110,7 +115,7 @@ const MatchDetailsPage = () => {
           </div>
         </section>
 
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
+        <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
           <div className="grid gap-8 md:grid-cols-3">
             <TeamColumn team={team1} align="right" />
             <div className="flex flex-col items-center justify-center text-center">

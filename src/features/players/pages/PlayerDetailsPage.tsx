@@ -20,7 +20,8 @@ import playerRepository from "@/features/players/api/playerRepository";
 import roundRepository from "@/features/rounds/api/roundRepository";
 import StatCard from "@/shared/components/cards/StatCard";
 import Container from "@/shared/components/layout/Container";
-import { typography } from "@/shared/styles/tokens";
+import LoadingSpinner from "@/shared/components/ui/LoadingSpinner";
+import { typography, colors } from "@sarradahub/design-system/tokens";
 import { Player, PlayerStat, Round } from "@/types";
 
 interface PlayerDetails extends Player {
@@ -147,7 +148,11 @@ const PlayerDetailsPage = () => {
   }
 
   if (isLoading) {
-    return <div className="mt-24 flex min-h-screen items-center justify-center">Carregando...</div>;
+    return (
+      <div className="mt-24 flex min-h-screen items-center justify-center">
+        <LoadingSpinner size="lg" text="Carregando..." />
+      </div>
+    );
   }
 
   if (error || !data) {
@@ -167,11 +172,11 @@ const PlayerDetailsPage = () => {
   return (
     <div
       className="mt-24 min-h-screen bg-gray-50 py-8"
-      style={{ fontFamily: typography.fontFamily }}
+      style={{ fontFamily: typography.fontFamily.sans }}
     >
       <Container>
-        <div className="space-y-8">
-        <section className="rounded-2xl bg-white p-6 shadow-lg">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <section className="md:col-span-12 rounded-2xl bg-white p-6 shadow-lg">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
             <div>
               <button
@@ -200,7 +205,7 @@ const PlayerDetailsPage = () => {
           </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <section className="md:col-span-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {statCardConfig.map((config) => (
             <StatCard
               key={config.key}
@@ -212,7 +217,7 @@ const PlayerDetailsPage = () => {
           ))}
         </section>
 
-        <section className="rounded-2xl bg-white shadow-lg">
+        <section className="md:col-span-12 rounded-2xl bg-white shadow-lg">
           <div className="flex border-b">
             {(["stats", "rounds", "matches"] as const).map((tabKey) => (
               <button
@@ -245,19 +250,19 @@ const PlayerDetailsPage = () => {
                       <XAxis dataKey="name" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="goals" name="Gols" fill="#10B981">
+                      <Bar dataKey="goals" name="Gols" fill={colors.success[500]}>
                         {chartData.map((_, index) => (
-                          <Cell key={`goal-cell-${index}`} fill="#10B981" />
+                          <Cell key={`goal-cell-${index}`} fill={colors.success[500]} />
                         ))}
                       </Bar>
-                      <Bar dataKey="assists" name="Assistências" fill="#3B82F6">
+                      <Bar dataKey="assists" name="Assistências" fill={colors.primary[500]}>
                         {chartData.map((_, index) => (
-                          <Cell key={`assist-cell-${index}`} fill="#3B82F6" />
+                          <Cell key={`assist-cell-${index}`} fill={colors.primary[500]} />
                         ))}
                       </Bar>
-                      <Bar dataKey="ownGoals" name="Gols Contra" fill="#EF4444">
+                      <Bar dataKey="ownGoals" name="Gols Contra" fill={colors.error[500]}>
                         {chartData.map((_, index) => (
-                          <Cell key={`ownGoal-cell-${index}`} fill="#EF4444" />
+                          <Cell key={`ownGoal-cell-${index}`} fill={colors.error[500]} />
                         ))}
                       </Bar>
                     </BarChart>
