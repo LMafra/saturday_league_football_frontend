@@ -25,9 +25,9 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.issue.number,
             });
-            
+
             const changedLines = files.reduce((acc, file) => acc + file.changes, 0);
-            
+
             if (changedLines > 1000) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
@@ -36,4 +36,3 @@ jobs:
                 body: `⚠️ **Large PR Warning**\n\nThis PR has ${changedLines} changed lines. Consider breaking it into smaller, more manageable PRs for easier review.`
               });
             }
-
