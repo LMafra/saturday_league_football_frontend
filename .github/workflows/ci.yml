@@ -36,7 +36,21 @@ jobs:
         echo "Installing design-system dependencies..."
         npm ci --legacy-peer-deps
         echo "Building design-system..."
-        npm run build
+        echo "Running TypeScript compilation first..."
+        npx tsc || (echo "TypeScript compilation failed. Checking output..." && ls -la dist/ 2>/dev/null || echo "No dist directory found" && exit 1)
+        echo "Verifying TypeScript compilation output..."
+        if [ ! -d "dist/foundations" ] || [ ! -f "dist/foundations/colors.js" ]; then
+          echo "Error: TypeScript compilation did not produce expected files"
+          echo "Listing dist directory contents:"
+          ls -la dist/ 2>/dev/null || echo "dist directory does not exist"
+          if [ -d "dist" ]; then
+            echo "Listing dist/foundations:"
+            ls -la dist/foundations/ 2>/dev/null || echo "dist/foundations does not exist"
+          fi
+          exit 1
+        fi
+        echo "TypeScript compilation successful. Running CSS generation..."
+        npm run build:css
         cd "$ORIGINAL_DIR"
         echo "Back in original directory: $(pwd)"
       lint-command: npm run lint
