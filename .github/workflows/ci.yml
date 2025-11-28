@@ -15,7 +15,16 @@ jobs:
     with:
       working-directory: .
       node-version: "20"
-      install-command: npm ci
+      install-command: |
+        npm ci
+        cd ..
+        if [ ! -d "platform" ]; then
+          git clone --depth 1 --branch main https://github.com/SarradaHub/platform.git platform
+        fi
+        cd platform/design-system
+        npm ci
+        npm run build
+        cd ../../saturday_league_football_frontend
       lint-command: npm run lint
       test-command: npm run test -- --coverage
       build-command: npm run build
