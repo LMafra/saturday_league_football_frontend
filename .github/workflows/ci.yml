@@ -34,7 +34,7 @@ jobs:
         fi
         cd platform/design-system
         echo "Installing design-system dependencies..."
-        npm ci
+        npm ci --legacy-peer-deps
         echo "Building design-system..."
         npm run build
         cd "$ORIGINAL_DIR"
