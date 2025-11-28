@@ -35,7 +35,7 @@ jobs:
         cd platform/design-system
         echo "Installing design-system dependencies..."
         npm ci --legacy-peer-deps
-        echo "Building design-system (TypeScript + CSS)..."
+        echo "Building design-system..."
         npm run build
         cd "$ORIGINAL_DIR"
         echo "Back in original directory: $(pwd)"
